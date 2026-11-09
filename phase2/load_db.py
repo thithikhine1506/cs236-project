@@ -102,7 +102,7 @@ def execute_sql_file(path):
     lines = [ln for ln in open(path, encoding="utf-8") if not ln.strip().startswith("--")]
     statements = [s.strip() for s in "".join(lines).split(";") if s.strip()]
     loader = _jvm.java.lang.Thread.currentThread().getContextClassLoader()
-    driver = loader.loadClass("org.postgresql.Driver").getDeclaredConstructor().newInstance()
+    driver = loader.loadClass("org.postgresql.Driver").newInstance()
     props = _jvm.java.util.Properties()
     props.setProperty("user", PG_USER)
     props.setProperty("password", PG_PASSWORD)
