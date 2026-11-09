@@ -1,0 +1,258 @@
+
+================================================================================
+STEP 1 - CLEAN NYC 311
+================================================================================
+  placeholders -> NULL   park_facility_name        799,997
+  placeholders -> NULL   park_borough                  940
+  placeholders -> NULL   borough                       940
+  placeholders -> NULL   descriptor                 18,106
+  placeholders -> NULL   descriptor_2              123,088
+  placeholders -> NULL   facility_type              28,476
+  placeholders -> NULL   location_type               6,109
+  placeholders -> NULL   police_precinct            15,103
+  placeholders -> NULL   resolution_description      6,087
+  invalid ZIP -> NULL    incident_zip                   17
+  case variants merged   complaint_type                  2 groups
+  case variants merged   descriptor                      3 groups
+  case variants merged   location_type                   1 groups
+  case variants merged   city                            5 groups
+  city filled from ZIP   city                       48,540
+  park_facility_name     -> 'Not Applicable'  786,176   kept NULL 13,821
+  descriptor missing     -> 'Not Applicable'   18,106   kept NULL      0
+  descriptor_2 missing   -> 'Not Applicable'  545,141   kept NULL  2,164
+  saved processed/nyc_clean.parquet
+  saved processed/csv/nyc_clean.csv
+
+================================================================================
+STEP 1 - CLEAN LA MyLA311
+================================================================================
+  invalid ZIP -> NULL    zipcode                        39
+  ZIP recovered from address                           152
+  cdmember filled from cd  cdmember               69,248
+  NULL -> 'Not Applicable'  mobileos              522,586
+  suffix filled from address suffix                 168
+  NULL -> 'Not Applicable'  address                   233
+  types cast, Y/N flags -> boolean, resolution attributes added
+  saved processed/la_clean.parquet
+  saved processed/csv/la_clean.csv
+
+================================================================================
+STEP 4 - COMMON SCHEMA + STANDARDIZATION
+================================================================================
+  23 unified columns: request_id, source_city, source_id, created_at, closed_at, updated_at, status, status_std, channel, channel_std, agency, agency_name, request_type, request_detail, postal_code, address, district, council_district, police_precinct, latitude, longitude, resolution_hours, resolution_valid
+
+================================================================================
+STEP 5 - MERGE
+================================================================================
+  unified columns: 23
+  saved processed/unified.parquet
+  saved processed/csv/unified.csv
+
+================================================================================
+STEP 6 - VALIDATION
+================================================================================
+  [PASS] cleaned NYC keeps every row  800,000 / 800,000
+  [PASS] cleaned LA keeps every row  800,000 / 800,000
+  [PASS] unified = NYC + LA  1,600,000 = 800,000 + 800,000
+  [PASS] cleaned NYC keeps all columns  46 (44 + 2 derived)
+  [PASS] cleaned LA keeps all columns  36 (34 + 2 derived)
+  [PASS] NYC park_facility_name: 'Not Applicable' outside parks, NULL only in parks  Not Applicable=786,176, NULL=13,821
+  [PASS] NYC city: every row with a known ZIP has a city  0 left; city still NULL=6,845 (no ZIP)
+  [PASS] NYC descriptor: 'Not Applicable' only where the complaint type never has a sub-type  Not Applicable=18,106, NULL=0
+  [PASS] NYC descriptor_2: 'Not Applicable' only where the request type never has one  Not Applicable=545,141, NULL=2,164
+  [PASS] LA mobileos has no NULL (non-app rows = 'Not Applicable')  Not Applicable=522,586, iOS=220,125, Android=57,289
+  [PASS] LA address has no NULL (Feedback rows = 'Not Applicable')  NULL=0, Not Applicable=233
+  [PASS] LA zipcode: no ZIP left unrecovered in the address  0 left; zipcode still NULL=774 (no ZIP in address / no address)
+  [PASS] LA cdmember: every row with a council district has a member  0 left; cdmember still NULL=766 (no council district)
+  [PASS] LA suffix: no single-street ST/AVE address left without a suffix  0 left; suffix still NULL=63,278 (intersections / no suffix)
+  [PASS] request_id unique and not NULL  1,600,000 distinct, 0 NULL
+  [PASS] unified schema matches the design  
+  [PASS] created_at present in every row  0 missing
+  [PASS] no negative resolution_hours  0 negative
+  [PASS] resolution_valid only for Closed rows with hours  
+  [PASS] postal_code is 5 digits or NULL  0 invalid
+  [PASS] status_std / channel_std use the standard vocabularies  
+  [PASS] every raw channel value is mapped  
+
+  Standardized status per city (raw -> standardized):
++-----------+------------+-----------+------+
+|source_city|status      |status_std |count |
++-----------+------------+-----------+------+
+|LA         |Closed      |Closed     |730126|
+|LA         |Cancelled   |Cancelled  |34725 |
+|LA         |Pending     |Pending    |17972 |
+|LA         |Open        |Open       |16081 |
+|LA         |Referred Out|Referred   |932   |
+|LA         |Forward     |Referred   |164   |
+|NYC        |Closed      |Closed     |704789|
+|NYC        |In Progress |In Progress|54731 |
+|NYC        |Open        |Open       |36761 |
+|NYC        |Assigned    |In Progress|3322  |
+|NYC        |Pending     |Pending    |330   |
+|NYC        |Unspecified |Unknown    |53    |
+|NYC        |Started     |In Progress|14    |
++-----------+------------+-----------+------+
+
+  Standardized channel per city (raw -> standardized):
++-----------+-----------------------------+-----------+------+
+|source_city|channel                      |channel_std|count |
++-----------+-----------------------------+-----------+------+
+|LA         |Call                         |Phone      |314443|
+|LA         |Mobile App                   |Mobile App |277390|
+|LA         |Self Service                 |Online     |128422|
+|LA         |Driver Self Report           |City Staff |75986 |
+|LA         |Council's Office             |City Staff |1940  |
+|LA         |Email                        |Email      |1522  |
+|LA         |Voicemail                    |Phone      |232   |
+|LA         |Social                       |Online     |51    |
+|LA         |Fax                          |Other      |4     |
+|LA         |Walk-in                      |Other      |4     |
+|LA         |Web Form                     |Online     |2     |
+|LA         |Queue Initiated Customer Call|Phone      |1     |
+|LA         |Letter                       |Other      |1     |
+|LA         |City Attorney                |City Staff |1     |
+|LA         |Radio                        |Other      |1     |
+|NYC        |ONLINE                       |Online     |419261|
+|NYC        |PHONE                        |Phone      |163519|
+|NYC        |MOBILE                       |Mobile App |150744|
+|NYC        |UNKNOWN                      |Unknown    |65687 |
+|NYC        |OTHER                        |Other      |789   |
++-----------+-----------------------------+-----------+------+
+
+  Resolution attributes per city:
++-----------+------+-----------------+------------+---------+
+|source_city|rows  |valid_resolutions|median_hours|max_hours|
++-----------+------+-----------------+------------+---------+
+|LA         |800000|728135           |46.53       |14654.5  |
+|NYC        |800000|704176           |4.86        |1730.1   |
++-----------+------+-----------------+------------+---------+
+
+  Unified schema:
+root
+ |-- request_id: string (nullable = true)
+ |-- source_city: string (nullable = true)
+ |-- source_id: string (nullable = true)
+ |-- created_at: timestamp (nullable = true)
+ |-- closed_at: timestamp (nullable = true)
+ |-- updated_at: timestamp (nullable = true)
+ |-- status: string (nullable = true)
+ |-- status_std: string (nullable = true)
+ |-- channel: string (nullable = true)
+ |-- channel_std: string (nullable = true)
+ |-- agency: string (nullable = true)
+ |-- agency_name: string (nullable = true)
+ |-- request_type: string (nullable = true)
+ |-- request_detail: string (nullable = true)
+ |-- postal_code: string (nullable = true)
+ |-- address: string (nullable = true)
+ |-- district: string (nullable = true)
+ |-- council_district: integer (nullable = true)
+ |-- police_precinct: string (nullable = true)
+ |-- latitude: double (nullable = true)
+ |-- longitude: double (nullable = true)
+ |-- resolution_hours: double (nullable = true)
+ |-- resolution_valid: boolean (nullable = true)
+
+  Sample unified rows:
+-RECORD 0----------------------------------------------------
+ request_id       | NYC-70051041                             
+ source_city      | NYC                                      
+ source_id        | 70051041                                 
+ created_at       | 2026-08-13 14:38:12                      
+ closed_at        | 2026-08-14 06:45:38                      
+ updated_at       | 2026-08-13 23:39:19                      
+ status           | Closed                                   
+ status_std       | Closed                                   
+ channel          | ONLINE                                   
+ channel_std      | Online                                   
+ agency           | DSNY                                     
+ agency_name      | Department of Sanitation                 
+ request_type     | Obstruction                              
+ request_detail   | Cone                                     
+ postal_code      | 10021                                    
+ address          | 1 EAST 75 STREET                         
+ district         | MANHATTAN                                
+ council_district | 4                                        
+ police_precinct  | Precinct 19                              
+ latitude         | 40.77431356660582                        
+ longitude        | -73.96536469727397                       
+ resolution_hours | 16.1239                                  
+ resolution_valid | true                                     
+-RECORD 1----------------------------------------------------
+ request_id       | NYC-70051752                             
+ source_city      | NYC                                      
+ source_id        | 70051752                                 
+ created_at       | 2026-08-13 14:38:04                      
+ closed_at        | 2026-09-13 04:02:02                      
+ updated_at       | 2026-09-13 04:02:11                      
+ status           | Closed                                   
+ status_std       | Closed                                   
+ channel          | ONLINE                                   
+ channel_std      | Online                                   
+ agency           | DCWP                                     
+ agency_name      | Department of Consumer and Worker Pro... 
+ request_type     | Consumer Complaint                       
+ request_detail   | Department Store or Megastore            
+ postal_code      | 10040                                    
+ address          | 138 NAGLE AVENUE                         
+ district         | MANHATTAN                                
+ council_district | 10                                       
+ police_precinct  | Precinct 34                              
+ latitude         | 40.8611434419365                         
+ longitude        | -73.92601150368121                       
+ resolution_hours | 733.3994                                 
+ resolution_valid | true                                     
+only showing top 2 rows
+
+-RECORD 0--------------------------------------
+ request_id       | LA-1-4601720641            
+ source_city      | LA                         
+ source_id        | 1-4601720641               
+ created_at       | 2024-01-01 00:00:06        
+ closed_at        | 2024-01-03 10:34:37        
+ updated_at       | 2024-01-03 10:37:51        
+ status           | Closed                     
+ status_std       | Closed                     
+ channel          | Call                       
+ channel_std      | Phone                      
+ agency           | LASAN                      
+ agency_name      | NULL                       
+ request_type     | Bulky Items                
+ request_detail   | NULL                       
+ postal_code      | 90016                      
+ address          | 3608 S MUIRFIELD ROAD      
+ district         | South Los Angeles APC      
+ council_district | 10                         
+ police_precinct  | SOUTHWEST                  
+ latitude         | 34.0211832597              
+ longitude        | -118.342143549             
+ resolution_hours | 58.5753                    
+ resolution_valid | true                       
+-RECORD 1--------------------------------------
+ request_id       | LA-1-4601721601            
+ source_city      | LA                         
+ source_id        | 1-4601721601               
+ created_at       | 2024-01-01 00:05:06        
+ closed_at        | NULL                       
+ updated_at       | 2024-01-01 00:05:06        
+ status           | Open                       
+ status_std       | Open                       
+ channel          | Self Service               
+ channel_std      | Online                     
+ agency           | BSL                        
+ agency_name      | NULL                       
+ request_type     | Multiple Streetlight Issue 
+ request_detail   | NULL                       
+ postal_code      | 90710                      
+ address          | 1523 W PACIFIC COAST HWY   
+ district         | Harbor APC                 
+ council_district | 15                         
+ police_precinct  | HARBOR                     
+ latitude         | 33.789784475205            
+ longitude        | -118.3036039481            
+ resolution_hours | NULL                       
+ resolution_valid | false                      
+only showing top 2 rows
+
+
+  22 of 22 checks passed

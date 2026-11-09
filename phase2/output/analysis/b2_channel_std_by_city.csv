@@ -1,0 +1,12 @@
+source_city,rank,category,requests,pct_of_city
+NYC,1,Online,419261,52.41
+NYC,2,Phone,163519,20.44
+NYC,3,Mobile App,150744,18.84
+NYC,4,Unknown,65687,8.21
+NYC,5,Other,789,0.1
+LA,1,Phone,314676,39.33
+LA,2,Mobile App,277390,34.67
+LA,3,Online,128475,16.06
+LA,4,City Staff,77927,9.74
+LA,5,Email,1522,0.19
+LA,6,Other,10,0.0

@@ -1,0 +1,150 @@
+-- schema.sql - CS236 Phase 2, section 2.2: PostgreSQL tables for the three processed datasets.
+-- Executed by phase2/load_db.py before loading (tables are recreated on every run).
+--
+-- Design rules
+--   * Column names and order are the same as the Spark (Parquet) datasets.
+--   * Types follow the Spark types: string -> TEXT / VARCHAR, timestamp -> TIMESTAMP
+--     (local wall-clock time, no time zone), bigint -> BIGINT, int -> INTEGER,
+--     double -> DOUBLE PRECISION, boolean -> BOOLEAN.
+--   * Codes stay text so leading zeros are kept (ZIP, BBL, house number).
+--     VARCHAR(n) is used only where Phase 1 guarantees the format (5-digit ZIP, ids,
+--     source_city); everything else is TEXT (same performance in PostgreSQL).
+--   * NOT NULL only for attributes every record has (ids, created time, status, type,
+--     agency, channel, resolution_valid). All other columns allow NULL = unknown.
+--   * CHECK constraints protect the rules Phase 1 enforced (ZIP format, durations >= 0,
+--     standardized vocabularies).
+
+DROP TABLE IF EXISTS unified_requests;
+DROP TABLE IF EXISTS nyc_requests;
+DROP TABLE IF EXISTS la_requests;
+
+-- -----------------------------------------------------------------------------
+-- Cleaned NYC 311 requests: 44 original columns + 2 derived (processed/nyc_clean)
+-- -----------------------------------------------------------------------------
+CREATE TABLE nyc_requests (
+    unique_key                     BIGINT           PRIMARY KEY,
+    created_date                   TIMESTAMP        NOT NULL,
+    closed_date                    TIMESTAMP,
+    agency                         TEXT             NOT NULL,
+    agency_name                    TEXT,
+    complaint_type                 TEXT             NOT NULL,
+    descriptor                     TEXT,
+    descriptor_2                   TEXT,
+    location_type                  TEXT,
+    incident_zip                   VARCHAR(5)       CHECK (incident_zip ~ '^[0-9]{5}$'),
+    incident_address               TEXT,
+    street_name                    TEXT,
+    cross_street_1                 TEXT,
+    cross_street_2                 TEXT,
+    intersection_street_1          TEXT,
+    intersection_street_2          TEXT,
+    address_type                   TEXT,
+    city                           TEXT,
+    landmark                       TEXT,
+    facility_type                  TEXT,
+    status                         TEXT             NOT NULL,
+    due_date                       TIMESTAMP,
+    resolution_description         TEXT,
+    resolution_action_updated_date TIMESTAMP,
+    community_board                TEXT,
+    council_district               INTEGER,
+    police_precinct                TEXT,
+    bbl                            TEXT,
+    borough                        TEXT,
+    x_coordinate_state_plane       INTEGER,
+    y_coordinate_state_plane       INTEGER,
+    open_data_channel_type         TEXT             NOT NULL,
+    park_facility_name             TEXT,
+    park_borough                   TEXT,
+    vehicle_type                   TEXT,
+    taxi_company_borough           TEXT,
+    taxi_pick_up_location          TEXT,
+    bridge_highway_name            TEXT,
+    bridge_highway_direction       TEXT,
+    road_ramp                      TEXT,
+    bridge_highway_segment         TEXT,
+    latitude                       DOUBLE PRECISION,
+    longitude                      DOUBLE PRECISION,
+    location                       TEXT,
+    resolution_hours               DOUBLE PRECISION CHECK (resolution_hours >= 0),
+    resolution_valid               BOOLEAN          NOT NULL
+);
+
+-- -----------------------------------------------------------------------------
+-- Cleaned LA MyLA311 requests: 34 original columns + 2 derived (processed/la_clean)
+-- -----------------------------------------------------------------------------
+CREATE TABLE la_requests (
+    srnumber                  VARCHAR(20)      PRIMARY KEY,
+    createddate               TIMESTAMP        NOT NULL,
+    updateddate               TIMESTAMP,
+    actiontaken               TEXT,
+    owner                     TEXT             NOT NULL,
+    requesttype               TEXT             NOT NULL,
+    status                    TEXT             NOT NULL,
+    requestsource             TEXT             NOT NULL,
+    createdbyuserorganization TEXT,
+    mobileos                  TEXT,
+    anonymous                 BOOLEAN,
+    assignto                  TEXT,
+    servicedate               TIMESTAMP,
+    closeddate                TIMESTAMP,
+    addressverified           VARCHAR(1)       CHECK (addressverified IN ('Y', 'N', 'M')),
+    approximateaddress        BOOLEAN,
+    address                   TEXT,
+    housenumber               TEXT,
+    direction                 TEXT,
+    streetname                TEXT,
+    suffix                    TEXT,
+    zipcode                   VARCHAR(5)       CHECK (zipcode ~ '^[0-9]{5}$'),
+    latitude                  DOUBLE PRECISION,
+    longitude                 DOUBLE PRECISION,
+    location                  TEXT,
+    tbmpage                   INTEGER,
+    tbmcolumn                 TEXT,
+    tbmrow                    INTEGER,
+    apc                       TEXT,
+    cd                        INTEGER,
+    cdmember                  TEXT,
+    nc                        INTEGER,
+    ncname                    TEXT,
+    policeprecinct            TEXT,
+    resolution_hours          DOUBLE PRECISION CHECK (resolution_hours >= 0),
+    resolution_valid          BOOLEAN          NOT NULL
+);
+
+-- -----------------------------------------------------------------------------
+-- Unified service requests: both cities in the common 23-column schema (processed/unified)
+-- -----------------------------------------------------------------------------
+CREATE TABLE unified_requests (
+    request_id       VARCHAR(30)      PRIMARY KEY,                  -- 'NYC-<unique_key>' / 'LA-<srnumber>'
+    source_city      VARCHAR(3)       NOT NULL CHECK (source_city IN ('NYC', 'LA')),
+    source_id        VARCHAR(20)      NOT NULL,                     -- id in nyc_requests / la_requests
+    created_at       TIMESTAMP        NOT NULL,
+    closed_at        TIMESTAMP,
+    updated_at       TIMESTAMP,
+    status           TEXT             NOT NULL,
+    status_std       VARCHAR(20)      NOT NULL CHECK (status_std IN
+                         ('Open', 'In Progress', 'Pending', 'Closed', 'Cancelled', 'Referred', 'Unknown')),
+    channel          TEXT             NOT NULL,
+    channel_std      VARCHAR(20)      NOT NULL CHECK (channel_std IN
+                         ('Phone', 'Online', 'Mobile App', 'Email', 'City Staff', 'Other', 'Unknown')),
+    agency           TEXT             NOT NULL,
+    agency_name      TEXT,                                          -- NULL for LA
+    request_type     TEXT             NOT NULL,
+    request_detail   TEXT,                                          -- NULL for LA
+    postal_code      VARCHAR(5)       CHECK (postal_code ~ '^[0-9]{5}$'),
+    address          TEXT,
+    district         TEXT,
+    council_district INTEGER,
+    police_precinct  TEXT,
+    latitude         DOUBLE PRECISION,
+    longitude        DOUBLE PRECISION,
+    resolution_hours DOUBLE PRECISION CHECK (resolution_hours >= 0),
+    resolution_valid BOOLEAN          NOT NULL,
+    CONSTRAINT unified_source_unique UNIQUE (source_city, source_id)
+);
+
+-- Indexes for the Phase 2 / Phase 3 queries (filter by city, time, postal code, type).
+CREATE INDEX unified_city_created_idx ON unified_requests (source_city, created_at);
+CREATE INDEX unified_city_postal_idx  ON unified_requests (source_city, postal_code);
+CREATE INDEX unified_city_type_idx    ON unified_requests (source_city, request_type);

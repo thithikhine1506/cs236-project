@@ -1,0 +1,9 @@
+source_city,period,requests,days_covered,pct_of_city,requests_per_day
+NYC,P1: days 1-7,189250,19,23.66,9960.5
+NYC,P2: days 8-14,152994,14,19.12,10928.1
+NYC,P3: days 15-21,149795,14,18.72,10699.6
+NYC,P4: days 22-end,307961,29,38.5,10619.3
+LA,P1: days 1-7,183066,49,22.88,3736.0
+LA,P2: days 8-14,193353,49,24.17,3946.0
+LA,P3: days 15-21,187802,49,23.48,3832.7
+LA,P4: days 22-end,235779,59,29.47,3996.3

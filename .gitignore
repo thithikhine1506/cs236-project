@@ -1,0 +1,33 @@
+# Datasets: too large for GitHub (download from the course Google Drive)
+CS236-Fall26-Project-Dataset/
+processed/
+*.parquet
+
+# Old / scratch folders (not part of the submission)
+load_data.py
+phase1/src/
+phase1/data_processed/
+
+# Spark / Python / editor files
+__pycache__/
+*.pyc
+spark-warehouse/
+metastore_db/
+derby.log
+.ipynb_checkpoints/
+.vscode/
+.DS_Store
+
+# Large or non-code files (submitted separately)
+*.mp4
+*.zip
+Finalised version/
+CS236-Fall26-Project-Updated.pdf
+
+# Earlier versions / split scripts (optional: remove the "# " to exclude)
+# phase1/*_v.1.1.py
+# phase1/ed_dataquality.py
+# phase1/eda_distributions.py
+# phase1/eda_schemacomparison.py
+# phase1/process_la.py
+# phase1/process_nyc.py

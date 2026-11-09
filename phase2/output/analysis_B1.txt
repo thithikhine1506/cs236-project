@@ -1,0 +1,41 @@
+
+================================================================================
+UNIFIED DATASET
+================================================================================
+  /Users/thithikhine/Desktop/Fall 2026/CS236 (DBMS)/Project/processed/unified.parquet
+  rows: 1,600,000  (LA 800,000, NYC 800,000)
+
+================================================================================
+B1 - RESOLUTION PERFORMANCE (bonus, valid completed requests only)
+================================================================================
++-----------+--------------+---------+------------+--------+-----------+
+|source_city|valid_requests|avg_hours|median_hours|avg_days|median_days|
++-----------+--------------+---------+------------+--------+-----------+
+|NYC        |704176        |89.01    |4.86        |3.71    |0.2        |
+|LA         |728135        |229.44   |46.54       |9.56    |1.94       |
++-----------+--------------+---------+------------+--------+-----------+
+
+  table saved: phase2/output/analysis/b1_resolution_by_city.csv
+5 request types with the longest average resolution time (types with >= 30 valid requests):
++-----------+----+--------------------------+--------------+---------+--------+------------+
+|source_city|rank|request_type              |valid_requests|avg_hours|avg_days|median_hours|
++-----------+----+--------------------------+--------------+---------+--------+------------+
+|NYC        |1   |Mobile Food Vendor        |153           |1440.26  |60.0    |1440.26     |
+|NYC        |2   |Food Establishment        |843           |1178.77  |49.1    |1440.12     |
+|NYC        |3   |Smoking or Vaping         |455           |852.58   |35.5    |887.61      |
+|NYC        |4   |Standing Water            |710           |739.63   |30.8    |770.5       |
+|NYC        |5   |Curb Condition            |1400          |563.68   |23.5    |503.35      |
+|LA         |1   |Single Streetlight Issue  |7872          |4031.75  |168.0   |3169.61     |
+|LA         |2   |Multiple Streetlight Issue|8375          |3380.13  |140.8   |2346.16     |
+|LA         |3   |Homeless Encampment       |33710         |1505.54  |62.7    |476.69      |
+|LA         |4   |Illegal Dumping Pickup    |55923         |174.25   |7.3     |65.89       |
+|LA         |5   |Bulky Items               |364522        |84.75    |3.5     |50.08       |
++-----------+----+--------------------------+--------------+---------+--------+------------+
+
+  table saved: phase2/output/analysis/b1_slowest_request_types.csv
+Findings:
+  NYC: average 89.01 h (3.71 days), median 4.86 h (0.2 days) over 704,176 requests  mean far above median (right-skewed)
+  LA: average 229.44 h (9.56 days), median 46.54 h (1.94 days) over 728,135 requests  mean far above median (right-skewed)
+  NYC: slowest type 'Mobile Food Vendor' averages 60.0 days (153 valid requests)
+  LA: slowest type 'Single Streetlight Issue' averages 168.0 days (7,872 valid requests)
+  plot saved: phase2/output/plots/b1_slowest_request_types.png

@@ -1,0 +1,1167 @@
+
+================================================================================
+PART 1 - LOAD & SCAN: NYC 311
+================================================================================
+Rows: 800,000   Columns: 44
+root
+ |-- unique_key: string (nullable = true)
+ |-- created_date: string (nullable = true)
+ |-- closed_date: string (nullable = true)
+ |-- agency: string (nullable = true)
+ |-- agency_name: string (nullable = true)
+ |-- complaint_type: string (nullable = true)
+ |-- descriptor: string (nullable = true)
+ |-- descriptor_2: string (nullable = true)
+ |-- location_type: string (nullable = true)
+ |-- incident_zip: string (nullable = true)
+ |-- incident_address: string (nullable = true)
+ |-- street_name: string (nullable = true)
+ |-- cross_street_1: string (nullable = true)
+ |-- cross_street_2: string (nullable = true)
+ |-- intersection_street_1: string (nullable = true)
+ |-- intersection_street_2: string (nullable = true)
+ |-- address_type: string (nullable = true)
+ |-- city: string (nullable = true)
+ |-- landmark: string (nullable = true)
+ |-- facility_type: string (nullable = true)
+ |-- status: string (nullable = true)
+ |-- due_date: string (nullable = true)
+ |-- resolution_description: string (nullable = true)
+ |-- resolution_action_updated_date: string (nullable = true)
+ |-- community_board: string (nullable = true)
+ |-- council_district: string (nullable = true)
+ |-- police_precinct: string (nullable = true)
+ |-- bbl: string (nullable = true)
+ |-- borough: string (nullable = true)
+ |-- x_coordinate_state_plane: string (nullable = true)
+ |-- y_coordinate_state_plane: string (nullable = true)
+ |-- open_data_channel_type: string (nullable = true)
+ |-- park_facility_name: string (nullable = true)
+ |-- park_borough: string (nullable = true)
+ |-- vehicle_type: string (nullable = true)
+ |-- taxi_company_borough: string (nullable = true)
+ |-- taxi_pick_up_location: string (nullable = true)
+ |-- bridge_highway_name: string (nullable = true)
+ |-- bridge_highway_direction: string (nullable = true)
+ |-- road_ramp: string (nullable = true)
+ |-- bridge_highway_segment: string (nullable = true)
+ |-- latitude: string (nullable = true)
+ |-- longitude: string (nullable = true)
+ |-- location: string (nullable = true)
+
+Types Spark infers (10% sample):
+  unique_key                       int
+  created_date                     timestamp
+  closed_date                      timestamp
+  agency                           string
+  agency_name                      string
+  complaint_type                   string
+  descriptor                       string
+  descriptor_2                     string
+  location_type                    string
+  incident_zip                     int
+  incident_address                 string
+  street_name                      string
+  cross_street_1                   string
+  cross_street_2                   string
+  intersection_street_1            string
+  intersection_street_2            string
+  address_type                     string
+  city                             string
+  landmark                         string
+  facility_type                    string
+  status                           string
+  due_date                         timestamp
+  resolution_description           string
+  resolution_action_updated_date   timestamp
+  community_board                  string
+  council_district                 int
+  police_precinct                  string
+  bbl                              bigint
+  borough                          string
+  x_coordinate_state_plane         int
+  y_coordinate_state_plane         int
+  open_data_channel_type           string
+  park_facility_name               string
+  park_borough                     string
+  vehicle_type                     string
+  taxi_company_borough             string
+  taxi_pick_up_location            string
+  bridge_highway_name              string
+  bridge_highway_direction         string
+  road_ramp                        string
+  bridge_highway_segment           string
+  latitude                         double
+  longitude                        double
+  location                         string
+
+Date ranges:
+  created_date                     2026-07-22 09:27:15  ->  2026-10-05 02:05:08   (non-null: 800,000)
+  closed_date                      2026-07-08 23:36:00  ->  2026-10-05 03:27:00   (non-null: 715,894)
+  due_date                         2026-07-28 06:36:18  ->  2026-11-03 18:04:31   (non-null: 3,151)
+  resolution_action_updated_date   2022-10-13 07:35:08  ->  2026-10-05 12:00:00   (non-null: 764,945)
+
+First 5 rows (key columns):
++----------+-----------------------+-----------+------+-------------------+-----------+----------------------+------------+---------+
+|unique_key|           created_date|closed_date|agency|     complaint_type|     status|open_data_channel_type|incident_zip|  borough|
++----------+-----------------------+-----------+------+-------------------+-----------+----------------------+------------+---------+
+|  70643465|2026-10-05T02:05:08.000|       NULL|  NYPD|Noise - Residential|In Progress|                ONLINE|       11235| BROOKLYN|
+|  70641951|2026-10-05T02:04:27.000|       NULL|  NYPD|Noise - Residential|In Progress|                ONLINE|       11365|   QUEENS|
+|  70643154|2026-10-05T02:04:18.000|       NULL|  NYPD|    Illegal Parking|In Progress|                 PHONE|       10039|MANHATTAN|
+|  70642079|2026-10-05T02:03:43.000|       NULL|  NYPD|    Illegal Parking|In Progress|                MOBILE|       10036|MANHATTAN|
+|  70644721|2026-10-05T02:03:35.000|       NULL|  NYPD|Noise - Residential|In Progress|                MOBILE|       11211| BROOKLYN|
++----------+-----------------------+-----------+------+-------------------+-----------+----------------------+------------+---------+
+only showing top 5 rows
+
+Random 5 rows (key columns):
++----------+-----------------------+-----------------------+------+------------------------+------+----------------------+------------+---------+
+|unique_key|           created_date|            closed_date|agency|          complaint_type|status|open_data_channel_type|incident_zip|  borough|
++----------+-----------------------+-----------------------+------+------------------------+------+----------------------+------------+---------+
+|  70643618|2026-10-04T06:45:49.000|2026-10-04T06:59:04.000|  NYPD|         Noise - Vehicle|Closed|                MOBILE|       11217| BROOKLYN|
+|  70641203|2026-10-04T06:00:00.000|2026-10-04T07:15:00.000|   DOT|Traffic Signal Condition|Closed|               UNKNOWN|       10027|MANHATTAN|
+|  70643940|2026-10-04T04:21:52.000|2026-10-04T05:31:04.000|  NYPD|     Noise - Residential|Closed|                MOBILE|       10473|    BRONX|
+|  70631283|2026-10-04T01:40:37.000|2026-10-04T03:11:37.000|  NYPD|         Illegal Parking|Closed|                MOBILE|       11356|   QUEENS|
+|  70638401|2026-10-04T00:26:13.000|2026-10-04T00:41:06.000|  NYPD|     Noise - Residential|Closed|                ONLINE|       11434|   QUEENS|
++----------+-----------------------+-----------------------+------+------------------------+------+----------------------+------------+---------+
+
+One full record (all columns):
+-RECORD 0------------------------------------------------------------------
+ unique_key                     | 70643465                                 
+ created_date                   | 2026-10-05T02:05:08.000                  
+ closed_date                    | NULL                                     
+ agency                         | NYPD                                     
+ agency_name                    | New York City Police Department          
+ complaint_type                 | Noise - Residential                      
+ descriptor                     | Banging/Pounding                         
+ descriptor_2                   | NULL                                     
+ location_type                  | Residential Building/House               
+ incident_zip                   | 11235                                    
+ incident_address               | 3029 BRIGHTON 12 STREET                  
+ street_name                    | BRIGHTON 12 STREET                       
+ cross_street_1                 | OCEAN VIEW AVENUE                        
+ cross_street_2                 | BRIGHTON BEACH AVENUE                    
+ intersection_street_1          | OCEAN VIEW AVENUE                        
+ intersection_street_2          | BRIGHTON BEACH AVENUE                    
+ address_type                   | ADDRESS                                  
+ city                           | BROOKLYN                                 
+ landmark                       | BRIGHTON 12 STREET                       
+ facility_type                  | NULL                                     
+ status                         | In Progress                              
+ due_date                       | NULL                                     
+ resolution_description         | NULL                                     
+ resolution_action_updated_date | NULL                                     
+ community_board                | 13 BROOKLYN                              
+ council_district               | 48                                       
+ police_precinct                | Precinct 60                              
+ bbl                            | 3087150068                               
+ borough                        | BROOKLYN                                 
+ x_coordinate_state_plane       | 996179                                   
+ y_coordinate_state_plane       | 150335                                   
+ open_data_channel_type         | ONLINE                                   
+ park_facility_name             | Unspecified                              
+ park_borough                   | BROOKLYN                                 
+ vehicle_type                   | NULL                                     
+ taxi_company_borough           | NULL                                     
+ taxi_pick_up_location          | NULL                                     
+ bridge_highway_name            | NULL                                     
+ bridge_highway_direction       | NULL                                     
+ road_ramp                      | NULL                                     
+ bridge_highway_segment         | NULL                                     
+ latitude                       | 40.579302862451435                       
+ longitude                      | -73.95705637804446                       
+ location                       | POINT (-73.957056378044 40.579302862451) 
+only showing top 1 row
+
+
+================================================================================
+PART 1 - LOAD & SCAN: LA MyLA311
+================================================================================
+Rows: 800,000   Columns: 34
+root
+ |-- srnumber: string (nullable = true)
+ |-- createddate: string (nullable = true)
+ |-- updateddate: string (nullable = true)
+ |-- actiontaken: string (nullable = true)
+ |-- owner: string (nullable = true)
+ |-- requesttype: string (nullable = true)
+ |-- status: string (nullable = true)
+ |-- requestsource: string (nullable = true)
+ |-- createdbyuserorganization: string (nullable = true)
+ |-- mobileos: string (nullable = true)
+ |-- anonymous: string (nullable = true)
+ |-- assignto: string (nullable = true)
+ |-- servicedate: string (nullable = true)
+ |-- closeddate: string (nullable = true)
+ |-- addressverified: string (nullable = true)
+ |-- approximateaddress: string (nullable = true)
+ |-- address: string (nullable = true)
+ |-- housenumber: string (nullable = true)
+ |-- direction: string (nullable = true)
+ |-- streetname: string (nullable = true)
+ |-- suffix: string (nullable = true)
+ |-- zipcode: string (nullable = true)
+ |-- latitude: string (nullable = true)
+ |-- longitude: string (nullable = true)
+ |-- location: string (nullable = true)
+ |-- tbmpage: string (nullable = true)
+ |-- tbmcolumn: string (nullable = true)
+ |-- tbmrow: string (nullable = true)
+ |-- apc: string (nullable = true)
+ |-- cd: string (nullable = true)
+ |-- cdmember: string (nullable = true)
+ |-- nc: string (nullable = true)
+ |-- ncname: string (nullable = true)
+ |-- policeprecinct: string (nullable = true)
+
+Types Spark infers (10% sample):
+  srnumber                         string
+  createddate                      timestamp
+  updateddate                      timestamp
+  actiontaken                      string
+  owner                            string
+  requesttype                      string
+  status                           string
+  requestsource                    string
+  createdbyuserorganization        string
+  mobileos                         string
+  anonymous                        string
+  assignto                         string
+  servicedate                      timestamp
+  closeddate                       timestamp
+  addressverified                  string
+  approximateaddress               string
+  address                          string
+  housenumber                      int
+  direction                        string
+  streetname                       string
+  suffix                           string
+  zipcode                          int
+  latitude                         double
+  longitude                        double
+  location                         string
+  tbmpage                          int
+  tbmcolumn                        string
+  tbmrow                           int
+  apc                              string
+  cd                               int
+  cdmember                         string
+  nc                               int
+  ncname                           string
+  policeprecinct                   string
+
+Date ranges:
+  createddate                      2024-01-01 00:00:06  ->  2024-07-24 23:14:35   (non-null: 800,000)
+  updateddate                      2024-01-01 00:05:06  ->  2026-01-31 05:53:27   (non-null: 800,000)
+  servicedate                      2022-08-30 10:51:34  ->  2025-09-03 15:53:36   (non-null: 746,962)
+  closeddate                       2024-01-01 07:39:53  ->  2025-10-16 00:02:44   (non-null: 763,778)
+
+First 5 rows (key columns):
++------------+-----------------------+-----------------------+-----+--------------------------+------+-------------+-------+---------------------+
+|    srnumber|            createddate|             closeddate|owner|               requesttype|status|requestsource|zipcode|                  apc|
++------------+-----------------------+-----------------------+-----+--------------------------+------+-------------+-------+---------------------+
+|1-4601720641|2024-01-01T00:00:06.000|2024-01-03T10:34:37.000|LASAN|               Bulky Items|Closed|         Call|  90016|South Los Angeles APC|
+|1-4601721601|2024-01-01T00:05:06.000|                   NULL|  BSL|Multiple Streetlight Issue|  Open| Self Service|  90710|           Harbor APC|
+|1-4601723091|2024-01-01T00:06:54.000|2024-09-16T11:51:33.000|  BSL|  Single Streetlight Issue|Closed|   Mobile App|  90046|          Central APC|
+|1-4601721751|2024-01-01T00:11:45.000|2024-01-02T09:58:40.000|LASAN|               Bulky Items|Closed|   Mobile App|  91335|     South Valley APC|
+|1-4601723281|2024-01-01T00:18:03.000|2024-01-29T09:06:38.000|  OCB|          Graffiti Removal|Closed|   Mobile App|  90015|          Central APC|
++------------+-----------------------+-----------------------+-----+--------------------------+------+-------------+-------+---------------------+
+only showing top 5 rows
+
+Random 5 rows (key columns):
++------------+-----------------------+-----------------------+-----+----------------------+------+-------------+-------+---------------------+
+|    srnumber|            createddate|             closeddate|owner|           requesttype|status|requestsource|zipcode|                  apc|
++------------+-----------------------+-----------------------+-----+----------------------+------+-------------+-------+---------------------+
+|1-4603328011|2024-01-02T16:17:13.000|2024-01-04T11:13:35.000|LASAN|           Bulky Items|Closed|         Call|  90017|          Central APC|
+|1-4603352481|2024-01-02T16:30:08.000|2024-01-04T16:54:26.000|LASAN|           Bulky Items|Closed|         Call|  90065| East Los Angeles APC|
+|1-4603399201|2024-01-02T16:54:34.000|2024-01-08T12:10:54.000|LASAN|Illegal Dumping Pickup|Closed|         Call|  90006|South Los Angeles APC|
+|1-4603562171|2024-01-02T19:03:44.000|2024-01-09T07:54:33.000|LASAN|           Bulky Items|Closed|   Mobile App|  90041| East Los Angeles APC|
+|1-4603864061|2024-01-03T06:25:40.000|2024-01-09T16:20:24.000|LASAN|           Bulky Items|Closed| Self Service|  90731|           Harbor APC|
++------------+-----------------------+-----------------------+-----+----------------------+------+-------------+-------+---------------------+
+
+One full record (all columns):
+-RECORD 0---------------------------------------------------------
+ srnumber                  | 1-4601720641                         
+ createddate               | 2024-01-01T00:00:06.000              
+ updateddate               | 2024-01-03T10:37:51.000              
+ actiontaken               | SR Created                           
+ owner                     | LASAN                                
+ requesttype               | Bulky Items                          
+ status                    | Closed                               
+ requestsource             | Call                                 
+ createdbyuserorganization | LASAN                                
+ mobileos                  | NULL                                 
+ anonymous                 | N                                    
+ assignto                  | SLA                                  
+ servicedate               | 2024-01-03T00:00:00.000              
+ closeddate                | 2024-01-03T10:34:37.000              
+ addressverified           | Y                                    
+ approximateaddress        | N                                    
+ address                   | 3608 S MUIRFIELD ROAD, 90016         
+ housenumber               | 3608                                 
+ direction                 | S                                    
+ streetname                | MUIRFIELD                            
+ suffix                    | ROAD                                 
+ zipcode                   | 90016                                
+ latitude                  | 34.0211832597                        
+ longitude                 | -118.342143549                       
+ location                  | POINT (-118.342143549 34.0211832597) 
+ tbmpage                   | 673                                  
+ tbmcolumn                 | D                                    
+ tbmrow                    | 1                                    
+ apc                       | South Los Angeles APC                
+ cd                        | 10                                   
+ cdmember                  | Heather Hutt                         
+ nc                        | 75                                   
+ ncname                    | West Adams                           
+ policeprecinct            | SOUTHWEST                            
+only showing top 1 row
+
+
+================================================================================
+PART 2 - DATA QUALITY: NYC 311
+================================================================================
+
+[2.1] Missing values per column (sorted by % missing)
++------------------------------+------+------------+-----------+
+|column                        |null  |empty_string|pct_missing|
++------------------------------+------+------------+-----------+
+|taxi_company_borough          |799369|0           |99.92      |
+|road_ramp                     |797966|0           |99.75      |
+|bridge_highway_direction      |797807|0           |99.73      |
+|due_date                      |796849|0           |99.61      |
+|bridge_highway_name           |796127|0           |99.52      |
+|bridge_highway_segment        |796127|0           |99.52      |
+|taxi_pick_up_location         |792169|0           |99.02      |
+|facility_type                 |769295|0           |96.16      |
+|vehicle_type                  |760420|0           |95.05      |
+|descriptor_2                  |424217|0           |53.03      |
+|landmark                      |259749|0           |32.47      |
+|cross_street_1                |192306|0           |24.04      |
+|cross_street_2                |192035|0           |24.0       |
+|intersection_street_1         |191338|0           |23.92      |
+|intersection_street_2         |190927|0           |23.87      |
+|bbl                           |99123 |0           |12.39      |
+|closed_date                   |84106 |0           |10.51      |
+|location_type                 |63140 |0           |7.89       |
+|city                          |55385 |0           |6.92       |
+|resolution_description        |37478 |0           |4.68       |
+|resolution_action_updated_date|35055 |0           |4.38       |
+|incident_address              |22532 |0           |2.82       |
+|street_name                   |22548 |0           |2.82       |
+|council_district              |18704 |0           |2.34       |
+|x_coordinate_state_plane      |14607 |0           |1.83       |
+|latitude                      |14630 |0           |1.83       |
+|longitude                     |14630 |0           |1.83       |
+|location                      |14630 |0           |1.83       |
+|y_coordinate_state_plane      |14495 |0           |1.81       |
+|incident_zip                  |6881  |0           |0.86       |
+|address_type                  |4444  |0           |0.56       |
+|unique_key                    |0     |0           |0.0        |
+|created_date                  |0     |0           |0.0        |
+|agency                        |0     |0           |0.0        |
+|agency_name                   |0     |0           |0.0        |
+|complaint_type                |0     |0           |0.0        |
+|descriptor                    |0     |0           |0.0        |
+|status                        |0     |0           |0.0        |
+|community_board               |0     |0           |0.0        |
+|police_precinct               |0     |0           |0.0        |
+|borough                       |0     |0           |0.0        |
+|open_data_channel_type        |0     |0           |0.0        |
+|park_facility_name            |0     |0           |0.0        |
+|park_borough                  |0     |0           |0.0        |
++------------------------------+------+------------+-----------+
+
+
+[2.2] Placeholder values meaning 'unknown'
++----------------------+-----------------+-----+
+|column                |placeholder_count|pct  |
++----------------------+-----------------+-----+
+|park_facility_name    |799997           |100.0|
+|descriptor_2          |123088           |15.39|
+|open_data_channel_type|65687            |8.21 |
+|facility_type         |28476            |3.56 |
+|descriptor            |18106            |2.26 |
+|police_precinct       |15103            |1.89 |
+|location_type         |6109             |0.76 |
+|resolution_description|6087             |0.76 |
+|borough               |940              |0.12 |
+|park_borough          |940              |0.12 |
+|status                |53               |0.01 |
+|road_ramp             |21               |0.0  |
+|bridge_highway_segment|21               |0.0  |
+|street_name           |1                |0.0  |
++----------------------+-----------------+-----+
+
+   park_facility_name: 'Unspecified'=799,256, 'N/A'=741
+   descriptor_2: 'N/A'=123,054, 'Unknown'=34
+   open_data_channel_type: 'UNKNOWN'=65,687
+   facility_type: 'N/A'=28,476
+   descriptor: 'N/A'=18,106
+   police_precinct: 'Unspecified'=15,103
+
+[2.3] Duplicates and identifier uniqueness
+  exact duplicate rows        : 0
+  distinct unique_key         : 800,000 of 800,000 rows
+  NULL / blank ids            : 0
+  ids not matching ^\d+$     : 0
+  id length range             : 8-8 characters
+
+[2.4] Timestamp logic
++-------------------------------------------+-----+-----+
+|check                                      |count|pct  |
++-------------------------------------------+-----+-----+
+|created missing or unparseable             |0    |0.0  |
+|closed before created (negative duration)  |626  |0.078|
+|closed == created (zero duration)          |11257|1.407|
+|closed exactly at 00:00:00 (date-only time)|21317|2.665|
+|resolution longer than 365 days            |0    |0.0  |
+|resolution_action_updated before created   |33656|4.207|
++-------------------------------------------+-----+-----+
+
+  Status vs. closed date (does 'Closed' always have a closed date?)
++-----------+---------------+------+
+|status     |has_closed_date|count |
++-----------+---------------+------+
+|Assigned   |false          |832   |
+|Assigned   |true           |2490  |
+|Closed     |false          |4     |
+|Closed     |true           |704785|
+|In Progress|false          |53196 |
+|In Progress|true           |1535  |
+|Open       |false          |29741 |
+|Open       |true           |7020  |
+|Pending    |false          |312   |
+|Pending    |true           |18    |
+|Started    |false          |14    |
+|Unspecified|false          |7     |
+|Unspecified|true           |46    |
++-----------+---------------+------+
+
+
+[2.5] Postal code validity
++------------------------------+------+------+
+|zip_format                    |count |pct   |
++------------------------------+------+------+
+|valid 5-digit, in city range  |793102|99.138|
+|missing                       |6881  |0.86  |
+|5-digit but outside city range|16    |0.002 |
+|malformed                     |1     |0.0   |
++------------------------------+------+------+
+
+  Examples of non-valid values:
++------------+-----+
+|incident_zip|count|
++------------+-----+
+|19034       |1    |
+|14217       |1    |
+|12763       |1    |
+|12056       |1    |
+|18966       |1    |
+|08690       |1    |
+|00083       |1    |
+|08003       |1    |
+|No          |1    |
+|17110       |1    |
++------------+-----+
+only showing top 10 rows
+
+
+[2.6] Coordinate validity
++-------+----+----------------+-----------------+------------------+------------------+------------------+
+|missing|zero|outside_city_box|min_lat          |max_lat           |min_lon           |max_lon           |
++-------+----+----------------+-----------------+------------------+------------------+------------------+
+|14630  |0   |0               |40.49892396163828|40.912868795316655|-74.25493716802339|-73.70038354802529|
++-------+----+----------------+-----------------+------------------+------------------+------------------+
+
+
+[2.7] Text consistency in categorical columns
++----------------------+------------+-------------------+--------+
+|column                |distinct_raw|distinct_normalized|variants|
++----------------------+------------+-------------------+--------+
+|agency                |14          |14                 |0       |
+|complaint_type        |184         |182                |2       |
+|descriptor            |909         |906                |3       |
+|location_type         |152         |151                |1       |
+|status                |7           |7                  |0       |
+|borough               |6           |6                  |0       |
+|city                  |90          |84                 |6       |
+|open_data_channel_type|5           |5                  |0       |
++----------------------+------------+-------------------+--------+
+
+   complaint_type: ['ELEVATOR', 'Elevator']
+   complaint_type: ['Plumbing', 'PLUMBING']
+   descriptor: ['Door', 'DOOR']
+   descriptor: ['LIGHTING', 'Lighting']
+   descriptor: ['Sewage', 'SEWAGE']
+   location_type: ['Residential Building', 'RESIDENTIAL BUILDING']
+   city: ['Far Rockaway', 'FAR ROCKAWAY']
+   city: ['QUEENS', 'Queens', 'queens']
+   city: ['BROOKLYN', 'Brooklyn']
+   city: ['NEW YORK', 'New York']
+   city: ['Elmont', 'ELMONT']
+
+================================================================================
+PART 2 - DATA QUALITY: LA MyLA311
+================================================================================
+
+[2.1] Missing values per column (sorted by % missing)
++-------------------------+------+------------+-----------+
+|column                   |null  |empty_string|pct_missing|
++-------------------------+------+------------+-----------+
+|mobileos                 |522586|0           |65.32      |
+|approximateaddress       |324461|0           |40.56      |
+|housenumber              |114696|0           |14.34      |
+|streetname               |114695|0           |14.34      |
+|cdmember                 |70014 |0           |8.75       |
+|suffix                   |63446 |0           |7.93       |
+|direction                |53219 |0           |6.65       |
+|servicedate              |53038 |0           |6.63       |
+|closeddate               |36222 |0           |4.53       |
+|nc                       |11414 |0           |1.43       |
+|ncname                   |11414 |0           |1.43       |
+|assignto                 |7469  |0           |0.93       |
+|zipcode                  |887   |0           |0.11       |
+|latitude                 |767   |0           |0.1        |
+|longitude                |767   |0           |0.1        |
+|location                 |767   |0           |0.1        |
+|tbmpage                  |774   |0           |0.1        |
+|tbmcolumn                |774   |0           |0.1        |
+|tbmrow                   |774   |0           |0.1        |
+|apc                      |822   |0           |0.1        |
+|cd                       |770   |0           |0.1        |
+|policeprecinct           |792   |0           |0.1        |
+|address                  |233   |0           |0.03       |
+|srnumber                 |0     |0           |0.0        |
+|createddate              |0     |0           |0.0        |
+|updateddate              |0     |0           |0.0        |
+|actiontaken              |0     |0           |0.0        |
+|owner                    |0     |0           |0.0        |
+|requesttype              |0     |0           |0.0        |
+|status                   |0     |0           |0.0        |
+|requestsource            |0     |0           |0.0        |
+|createdbyuserorganization|0     |0           |0.0        |
+|anonymous                |0     |0           |0.0        |
+|addressverified          |0     |0           |0.0        |
++-------------------------+------+------------+-----------+
+
+
+[2.2] Placeholder values meaning 'unknown'
++-------+-----------------+---+
+|column |placeholder_count|pct|
++-------+-----------------+---+
+|zipcode|38               |0.0|
++-------+-----------------+---+
+
+   zipcode: '0'=38
+
+[2.3] Duplicates and identifier uniqueness
+  exact duplicate rows        : 0
+  distinct srnumber           : 800,000 of 800,000 rows
+  NULL / blank ids            : 0
+  ids not matching ^1-\d+$   : 0
+  id length range             : 12-12 characters
+
+[2.4] Timestamp logic
++-------------------------------------------+-----+-----+
+|check                                      |count|pct  |
++-------------------------------------------+-----+-----+
+|created missing or unparseable             |0    |0.0  |
+|closed before created (negative duration)  |0    |0.0  |
+|closed == created (zero duration)          |748  |0.093|
+|closed exactly at 00:00:00 (date-only time)|0    |0.0  |
+|resolution longer than 365 days            |3072 |0.384|
+|servicedate before created                 |71297|8.912|
+|updateddate before created                 |0    |0.0  |
++-------------------------------------------+-----+-----+
+
+  Status vs. closed date (does 'Closed' always have a closed date?)
++------------+---------------+------+
+|status      |has_closed_date|count |
++------------+---------------+------+
+|Cancelled   |false          |14    |
+|Cancelled   |true           |34711 |
+|Closed      |false          |1991  |
+|Closed      |true           |728135|
+|Forward     |false          |164   |
+|Open        |false          |16081 |
+|Pending     |false          |17972 |
+|Referred Out|true           |932   |
++------------+---------------+------+
+
+
+[2.5] Postal code validity
++----------------------------+------+------+
+|zip_format                  |count |pct   |
++----------------------------+------+------+
+|valid 5-digit, in city range|799074|99.884|
+|missing                     |887   |0.111 |
+|malformed                   |39    |0.005 |
++----------------------------+------+------+
+
+  Examples of non-valid values:
++-------+-----+
+|zipcode|count|
++-------+-----+
+|0      |38   |
+|VE, 0  |1    |
++-------+-----+
+
+
+[2.6] Coordinate validity
++-------+----+----------------+------------+-------------+--------------+--------------+
+|missing|zero|outside_city_box|min_lat     |max_lat      |min_lon       |max_lon       |
++-------+----+----------------+------------+-------------+--------------+--------------+
+|767    |0   |0               |33.706051966|34.3343354198|-118.667840918|-118.155792027|
++-------+----+----------------+------------+-------------+--------------+--------------+
+
+
+[2.7] Text consistency in categorical columns
++-------------------------+------------+-------------------+--------+
+|column                   |distinct_raw|distinct_normalized|variants|
++-------------------------+------------+-------------------+--------+
+|owner                    |11          |11                 |0       |
+|requesttype              |12          |12                 |0       |
+|status                   |6           |6                  |0       |
+|requestsource            |15          |15                 |0       |
+|actiontaken              |7           |7                  |0       |
+|createdbyuserorganization|14          |14                 |0       |
+|apc                      |7           |7                  |0       |
+|policeprecinct           |21          |21                 |0       |
++-------------------------+------------+-------------------+--------+
+
+
+================================================================================
+CROSS-DATASET: identifier overlap
+================================================================================
+Identical id strings in both datasets: 0
+
+================================================================================
+PART 3.1 - STATUS, CHANNEL AND AGENCY
+================================================================================
+
+NYC 311 - status (7 distinct values)
++-----------+------+----+
+|status     |count |pct |
++-----------+------+----+
+|Closed     |704789|88.1|
+|In Progress|54731 |6.84|
+|Open       |36761 |4.6 |
+|Assigned   |3322  |0.42|
+|Pending    |330   |0.04|
+|Unspecified|53    |0.01|
+|Started    |14    |0.0 |
++-----------+------+----+
+
+
+LA MyLA311 - status (6 distinct values)
++------------+------+-----+
+|status      |count |pct  |
++------------+------+-----+
+|Closed      |730126|91.27|
+|Cancelled   |34725 |4.34 |
+|Pending     |17972 |2.25 |
+|Open        |16081 |2.01 |
+|Referred Out|932   |0.12 |
+|Forward     |164   |0.02 |
++------------+------+-----+
+
+  plot saved: phase1/output/eda/plots/3_1_status.png
+
+NYC 311 - open_data_channel_type (5 distinct values)
++----------------------+------+-----+
+|open_data_channel_type|count |pct  |
++----------------------+------+-----+
+|ONLINE                |419261|52.41|
+|PHONE                 |163519|20.44|
+|MOBILE                |150744|18.84|
+|UNKNOWN               |65687 |8.21 |
+|OTHER                 |789   |0.1  |
++----------------------+------+-----+
+
+
+LA MyLA311 - requestsource (15 distinct values)
++-----------------------------+------+-----+
+|requestsource                |count |pct  |
++-----------------------------+------+-----+
+|Call                         |314443|39.31|
+|Mobile App                   |277390|34.67|
+|Self Service                 |128422|16.05|
+|Driver Self Report           |75986 |9.5  |
+|Council's Office             |1940  |0.24 |
+|Email                        |1522  |0.19 |
+|Voicemail                    |232   |0.03 |
+|Social                       |51    |0.01 |
+|Fax                          |4     |0.0  |
+|Walk-in                      |4     |0.0  |
+|Web Form                     |2     |0.0  |
+|Queue Initiated Customer Call|1     |0.0  |
+|Letter                       |1     |0.0  |
+|City Attorney                |1     |0.0  |
+|Radio                        |1     |0.0  |
++-----------------------------+------+-----+
+
+  plot saved: phase1/output/eda/plots/3_1_channel.png
+
+NYC 311 - agency (14 distinct values)
++------+------+-----+
+|agency|count |pct  |
++------+------+-----+
+|NYPD  |372269|46.53|
+|HPD   |135875|16.98|
+|DSNY  |72196 |9.02 |
+|DOT   |55413 |6.93 |
+|DEP   |48641 |6.08 |
+|DPR   |40374 |5.05 |
+|DOB   |27555 |3.44 |
+|DOHMH |20623 |2.58 |
+|DHS   |12039 |1.5  |
+|TLC   |8020  |1.0  |
+|DCWP  |4962  |0.62 |
+|OOS   |1091  |0.14 |
+|EDC   |881   |0.11 |
+|OTI   |61    |0.01 |
++------+------+-----+
+
+
+LA MyLA311 - owner (11 distinct values)
++-----+------+-----+
+|owner|count |pct  |
++-----+------+-----+
+|LASAN|593483|74.19|
+|OCB  |177440|22.18|
+|BSL  |22429 |2.8  |
+|ITA  |5663  |0.71 |
+|LADWP|797   |0.1  |
+|BSS  |99    |0.01 |
+|LADOT|39    |0.0  |
+|RAP  |27    |0.0  |
+|LADBS|13    |0.0  |
+|LAAS |9     |0.0  |
+|BOE  |1     |0.0  |
++-----+------+-----+
+
+  plot saved: phase1/output/eda/plots/3_1_agency.png
+
+================================================================================
+PART 3.2 - REQUEST TYPES
+================================================================================
+
+NYC 311 - complaint_type: 184 distinct types, top 15 cover 61.0% of requests
++-----------------------+------+-----+
+|complaint_type         |count |pct  |
++-----------------------+------+-----+
+|Illegal Parking        |128241|16.03|
+|Noise - Residential    |77800 |9.72 |
+|Noise - Street/Sidewalk|54255 |6.78 |
+|Blocked Driveway       |37713 |4.71 |
+|UNSANITARY CONDITION   |35048 |4.38 |
+|Street Condition       |21422 |2.68 |
+|Dirty Condition        |17042 |2.13 |
+|Abandoned Vehicle      |16305 |2.04 |
+|PLUMBING               |16092 |2.01 |
+|Water Maintenance      |16039 |2.0  |
+|PAINT/PLASTER          |15789 |1.97 |
+|Noise - Commercial     |13549 |1.69 |
+|Noise - Vehicle        |13066 |1.63 |
+|Noise                  |12817 |1.6  |
+|Damaged Tree           |12727 |1.59 |
++-----------------------+------+-----+
+
+
+LA MyLA311 - requesttype: 12 distinct types, top 15 cover 100.0% of requests
++--------------------------+------+-----+
+|requesttype               |count |pct  |
++--------------------------+------+-----+
+|Bulky Items               |378124|47.27|
+|Graffiti Removal          |177470|22.18|
+|Metal/Household Appliances|67616 |8.45 |
+|Illegal Dumping Pickup    |59582 |7.45 |
+|Homeless Encampment       |47660 |5.96 |
+|Electronic Waste          |22144 |2.77 |
+|Dead Animal Removal       |18146 |2.27 |
+|Multiple Streetlight Issue|11830 |1.48 |
+|Single Streetlight Issue  |10520 |1.31 |
+|Other                     |5424  |0.68 |
+|Report Water Waste        |796   |0.1  |
+|Feedback                  |688   |0.09 |
++--------------------------+------+-----+
+
+  plot saved: phase1/output/eda/plots/3_2_request_types.png
+
+================================================================================
+PART 3.3 - TEMPORAL PATTERNS (by created time)
+================================================================================
+
+NYC 311 - requests per month (partial months have fewer days covered)
++-------+--------+------------+----------------+
+|month  |requests|days_covered|requests_per_day|
++-------+--------+------------+----------------+
+|2026-07|103830  |10          |10383           |
+|2026-08|328905  |31          |10610           |
+|2026-09|323616  |30          |10787           |
+|2026-10|43649   |5           |8730            |
++-------+--------+------------+----------------+
+
+NYC 311 - requests per within-month period (P4 has 7-10 days, so compare requests_per_day, not raw counts)
++---------------+--------+-----+------------+----------------+
+|period         |requests|pct  |days_covered|requests_per_day|
++---------------+--------+-----+------------+----------------+
+|P1: days 1-7   |189250  |23.66|19          |9961            |
+|P2: days 8-14  |152994  |19.12|14          |10928           |
+|P3: days 15-21 |149795  |18.72|14          |10700           |
+|P4: days 22-end|307961  |38.5 |29          |10619           |
++---------------+--------+-----+------------+----------------+
+
+NYC 311 - requests per weekday
++-------+--------+-----+
+|weekday|requests|pct  |
++-------+--------+-----+
+|Sun    |109382  |13.67|
+|Mon    |112762  |14.1 |
+|Tue    |109644  |13.71|
+|Wed    |117034  |14.63|
+|Thu    |118482  |14.81|
+|Fri    |122015  |15.25|
+|Sat    |110681  |13.84|
++-------+--------+-----+
+
+NYC 311 - busiest hour 11:00 (49,361), quietest hour 04:00 (8,928)
+
+LA MyLA311 - requests per month (partial months have fewer days covered)
++-------+--------+------------+----------------+
+|month  |requests|days_covered|requests_per_day|
++-------+--------+------------+----------------+
+|2024-01|124815  |31          |4026            |
+|2024-02|98078   |29          |3382            |
+|2024-03|115786  |31          |3735            |
+|2024-04|118652  |30          |3955            |
+|2024-05|119528  |31          |3856            |
+|2024-06|116022  |30          |3867            |
+|2024-07|107119  |24          |4463            |
++-------+--------+------------+----------------+
+
+LA MyLA311 - requests per within-month period (P4 has 7-10 days, so compare requests_per_day, not raw counts)
++---------------+--------+-----+------------+----------------+
+|period         |requests|pct  |days_covered|requests_per_day|
++---------------+--------+-----+------------+----------------+
+|P1: days 1-7   |183066  |22.88|49          |3736            |
+|P2: days 8-14  |193353  |24.17|49          |3946            |
+|P3: days 15-21 |187802  |23.48|49          |3833            |
+|P4: days 22-end|235779  |29.47|59          |3996            |
++---------------+--------+-----+------------+----------------+
+
+LA MyLA311 - requests per weekday
++-------+--------+-----+
+|weekday|requests|pct  |
++-------+--------+-----+
+|Sun    |78961   |9.87 |
+|Mon    |149348  |18.67|
+|Tue    |148248  |18.53|
+|Wed    |147889  |18.49|
+|Thu    |117189  |14.65|
+|Fri    |94254   |11.78|
+|Sat    |64111   |8.01 |
++-------+--------+-----+
+
+LA MyLA311 - busiest hour 10:00 (68,932), quietest hour 03:00 (1,366)
+  plot saved: phase1/output/eda/plots/3_3_monthly_volume.png
+  plot saved: phase1/output/eda/plots/3_3_hour_and_weekday.png
+  plot saved: phase1/output/eda/plots/3_3_month_periods.png
+
+================================================================================
+PART 3.4 - RESOLUTION TIME (status Closed, closed >= created)
+================================================================================
+Resolution time in hours
++----------+-------+----+-----+----+-----+------+-----+-----+------+-------+
+|dataset   |n_valid|zero|mean |p05 |p25  |median|p75  |p95  |p99   |max    |
++----------+-------+----+-----+----+-----+------+-----+-----+------+-------+
+|NYC 311   |704176 |4206|89.0 |0.19|1.01 |4.86  |65.8 |524.4|1029.7|1730.1 |
+|LA MyLA311|728135 |601 |229.4|0.05|19.76|46.53 |115.8|529.7|5781.1|14654.5|
++----------+-------+----+-----+----+-----+------+-----+-----+------+-------+
+
+NYC 311 - median / mean resolution hours for the 8 most common request types
++-----------------------+------+--------+------+
+|request_type           |closed|median_h|mean_h|
++-----------------------+------+--------+------+
+|Illegal Parking        |127850|1.6     |3.3   |
+|Noise - Residential    |77621 |1.2     |2.7   |
+|Noise - Street/Sidewalk|54200 |1.1     |2.5   |
+|Blocked Driveway       |37614 |1.7     |3.3   |
+|UNSANITARY CONDITION   |28453 |257.7   |342.2 |
+|Street Condition       |19076 |43.0    |76.4  |
+|Abandoned Vehicle      |16294 |2.4     |4.3   |
+|Dirty Condition        |16214 |48.8    |63.7  |
++-----------------------+------+--------+------+
+
+LA MyLA311 - median / mean resolution hours for the 8 most common request types
++--------------------------+------+--------+------+
+|request_type              |closed|median_h|mean_h|
++--------------------------+------+--------+------+
+|Bulky Items               |364522|50.1    |84.8  |
+|Graffiti Removal          |151976|8.7     |59.2  |
+|Metal/Household Appliances|64327 |50.9    |75.2  |
+|Illegal Dumping Pickup    |55923 |65.8    |174.3 |
+|Homeless Encampment       |33710 |476.6   |1505.5|
+|Electronic Waste          |21285 |49.4    |70.2  |
+|Dead Animal Removal       |17899 |15.4    |14.7  |
+|Multiple Streetlight Issue|8375  |2345.9  |3380.1|
++--------------------------+------+--------+------+
+
+  plot saved: phase1/output/eda/plots/3_4_resolution_time.png
+
+================================================================================
+PART 3.5 - GEOGRAPHY
+================================================================================
+
+NYC 311 - borough distribution
++-------------+------+-----+
+|borough      |count |pct  |
++-------------+------+-----+
+|BROOKLYN     |255562|31.95|
+|QUEENS       |203042|25.38|
+|MANHATTAN    |156448|19.56|
+|BRONX        |152400|19.05|
+|STATEN ISLAND|31608 |3.95 |
+|Unspecified  |940   |0.12 |
++-------------+------+-----+
+
+NYC 311 - 254 distinct valid postal codes; top 10 hold 13.2% of requests
++------------+-----+----+
+|incident_zip|count|pct |
++------------+-----+----+
+|11226       |13832|1.73|
+|10457       |10944|1.37|
+|10453       |10670|1.33|
+|11201       |10278|1.28|
+|10452       |10261|1.28|
+|10467       |10199|1.27|
+|10458       |10049|1.26|
+|11385       |10037|1.25|
+|10456       |9745 |1.22|
+|11207       |9635 |1.2 |
++------------+-----+----+
+
+
+LA MyLA311 - apc distribution
++---------------------+------+-----+
+|apc                  |count |pct  |
++---------------------+------+-----+
+|South Los Angeles APC|156130|19.52|
+|South Valley APC     |152290|19.04|
+|Central APC          |148235|18.53|
+|North Valley APC     |134557|16.82|
+|East Los Angeles APC |97152 |12.14|
+|West Los Angeles APC |68286 |8.54 |
+|Harbor APC           |42528 |5.32 |
+|<NULL>               |822   |0.1  |
++---------------------+------+-----+
+
+LA MyLA311 - 139 distinct valid postal codes; top 10 hold 20.1% of requests
++-------+-----+----+
+|zipcode|count|pct |
++-------+-----+----+
+|90026  |19661|2.46|
+|91342  |18691|2.34|
+|90011  |17299|2.16|
+|91331  |17116|2.14|
+|90003  |16270|2.03|
+|90033  |15174|1.9 |
+|91335  |14744|1.84|
+|90019  |14106|1.76|
+|90044  |14000|1.75|
+|90731  |13840|1.73|
++-------+-----+----+
+
+  plot saved: phase1/output/eda/plots/3_5_request_locations.png
+
+================================================================================
+PART 4.1 - ATTRIBUTE MAPPING (overlapping attributes)
+================================================================================
++---------------------+---------+------------------------------+----------------------------+------------+--------------+----------------------------+-----------+------------+-----------------------------------------------------+
+|concept              |match    |nyc_column                    |nyc_example                 |nyc_pct_null|la_column     |la_example                  |la_pct_null|unified_type|note                                                 |
++---------------------+---------+------------------------------+----------------------------+------------+--------------+----------------------------+-----------+------------+-----------------------------------------------------+
+|request id           |renamed  |unique_key                    |70643465                    |0.0         |srnumber      |1-4601720641                |0.0        |string      |NYC 8 digits vs LA '1-' + 10 digits                  |
+|created timestamp    |renamed  |created_date                  |2026-10-05T02:05:08.000     |0.0         |createddate   |2024-01-01T00:00:06.000     |0.0        |timestamp   |same ISO format, local time                          |
+|closed timestamp     |renamed  |closed_date                   |2026-10-05T02:02:34.000     |10.5        |closeddate    |2024-01-03T10:34:37.000     |4.5        |timestamp   |same ISO format, local time                          |
+|last update timestamp|renamed  |resolution_action_updated_date|2026-10-05T02:02:36.000     |4.4         |updateddate   |2024-01-03T10:37:51.000     |0.0        |timestamp   |similar meaning                                      |
+|due / service date   |renamed  |due_date                      |2026-11-03T18:04:31.000     |99.6        |servicedate   |2024-01-03T00:00:00.000     |6.6        |timestamp   |DIFFERENT meaning: NYC target date vs LA service date|
+|status               |same name|status                        |In Progress                 |0.0         |status        |Closed                      |0.0        |string      |same name, different vocabularies                    |
+|submission channel   |renamed  |open_data_channel_type        |ONLINE                      |0.0         |requestsource |Call                        |0.0        |string      |different vocabularies                               |
+|agency code          |renamed  |agency                        |NYPD                        |0.0         |owner         |LASAN                       |0.0        |string      |different agencies, no shared codes                  |
+|agency full name     |NYC only |agency_name                   |New York City Police Departm|0.0         |-             |-                           |NULL       |string      |LA has codes only                                    |
+|request type         |renamed  |complaint_type                |Noise - Residential         |0.0         |requesttype   |Bulky Items                 |0.0        |string      |different taxonomies                                 |
+|request detail       |NYC only |descriptor                    |Banging/Pounding            |0.0         |-             |-                           |NULL       |string      |LA has no sub-type                                   |
+|resolution / action  |renamed  |resolution_description        |The New York City Police Dep|4.7         |actiontaken   |SR Created                  |0.0        |string      |NYC free text vs LA short code                       |
+|postal code          |renamed  |incident_zip                  |11235                       |0.9         |zipcode       |90016                       |0.1        |string      |keep as 5-char text (leading zeros)                  |
+|full address         |renamed  |incident_address              |3029 BRIGHTON 12 STREET     |2.8         |address       |3608 S MUIRFIELD ROAD, 90016|0.0        |string      |LA address ends with ', <zip>'                       |
+|street name          |renamed  |street_name                   |BRIGHTON 12 STREET          |2.8         |streetname    |MUIRFIELD                   |14.3       |string      |LA splits direction / name / suffix                  |
+|city / locality      |NYC only |city                          |BROOKLYN                    |6.9         |-             |-                           |NULL       |string      |LA rows are all Los Angeles                          |
+|district             |renamed  |borough                       |BROOKLYN                    |0.0         |apc           |South Los Angeles APC       |0.1        |string      |different units: 5 boroughs vs 7 APCs                |
+|council district     |renamed  |council_district              |48                          |2.3         |cd            |10                          |0.1        |integer     |NYC zero-padded ('09') vs LA ('9')                   |
+|police precinct      |renamed  |police_precinct               |Precinct 60                 |0.0         |policeprecinct|SOUTHWEST                   |0.1        |string      |NYC 'Precinct 60' vs LA 'SOUTHWEST'                  |
+|neighborhood body    |renamed  |community_board               |13 BROOKLYN                 |0.0         |ncname        |West Adams                  |1.4        |string      |community board vs neighborhood council              |
+|latitude             |same name|latitude                      |40.579302862451435          |1.8         |latitude      |34.0211832597               |0.1        |double      |same name                                            |
+|longitude            |same name|longitude                     |-73.95705637804446          |1.8         |longitude     |-118.342143549              |0.1        |double      |same name                                            |
+|point (WKT)          |same name|location                      |POINT (-73.957056378044 40.5|1.8         |location      |POINT (-118.342143549 34.021|0.1        |string      |same name, redundant with lat/lon                    |
++---------------------+---------+------------------------------+----------------------------+------------+--------------+----------------------------+-----------+------------+-----------------------------------------------------+
+
+  table saved: phase1/output/eda/schema_comparison.csv
+
+  20 concepts exist in both sources: 4 with the same column name, 16 renamed.
+
+================================================================================
+PART 4.2 - ATTRIBUTES AVAILABLE IN ONLY ONE SOURCE
+================================================================================
+
+NYC 311: 21 columns with no counterpart in the other city
++------------------------+----------------------------------------+--------+
+|column                  |example                                 |pct_null|
++------------------------+----------------------------------------+--------+
+|descriptor_2            |Before/After Hours                      |53.0    |
+|location_type           |Residential Building/House              |7.9     |
+|cross_street_1          |OCEAN VIEW AVENUE                       |24.0    |
+|cross_street_2          |BRIGHTON BEACH AVENUE                   |24.0    |
+|intersection_street_1   |OCEAN VIEW AVENUE                       |23.9    |
+|intersection_street_2   |BRIGHTON BEACH AVENUE                   |23.9    |
+|address_type            |ADDRESS                                 |0.6     |
+|landmark                |BRIGHTON 12 STREET                      |32.5    |
+|facility_type           |N/A                                     |96.2    |
+|bbl                     |3087150068                              |12.4    |
+|x_coordinate_state_plane|996179                                  |1.8     |
+|y_coordinate_state_plane|150335                                  |1.8     |
+|park_facility_name      |Unspecified                             |0.0     |
+|park_borough            |BROOKLYN                                |0.0     |
+|vehicle_type            |SUV                                     |95.1    |
+|taxi_company_borough    |QUEENS                                  |99.9    |
+|taxi_pick_up_location   |JOHN F KENNEDY AIRPORT, QUEENS (JAMAICA)|99.0    |
+|bridge_highway_name     |L                                       |99.5    |
+|bridge_highway_direction|F to Manhattan                          |99.7    |
+|road_ramp               |Roadway                                 |99.7    |
+|bridge_highway_segment  |Other                                   |99.5    |
++------------------------+----------------------------------------+--------+
+
+
+LA MyLA311: 14 columns with no counterpart in the other city
++-------------------------+------------+--------+
+|column                   |example     |pct_null|
++-------------------------+------------+--------+
+|createdbyuserorganization|LASAN       |0.0     |
+|mobileos                 |iOS         |65.3    |
+|anonymous                |N           |0.0     |
+|assignto                 |SLA         |0.9     |
+|addressverified          |Y           |0.0     |
+|approximateaddress       |N           |40.6    |
+|housenumber              |3608        |14.3    |
+|direction                |S           |6.7     |
+|suffix                   |ROAD        |7.9     |
+|tbmpage                  |673         |0.1     |
+|tbmcolumn                |D           |0.1     |
+|tbmrow                   |1           |0.1     |
+|cdmember                 |Heather Hutt|8.8     |
+|nc                       |75          |1.4     |
++-------------------------+------------+--------+
+
+  also single-source by concept: agency_name (LA has codes only)
+  also single-source by concept: descriptor (LA has no sub-type)
+  also single-source by concept: city (LA rows are all Los Angeles)
+
+================================================================================
+PART 4.3 - TYPE AND FORMAT DIFFERENCES IN OVERLAPPING COLUMNS
+================================================================================
++-----------------+--------------------+---------------+----------------+---------------+------------+
+|concept          |column              |pct_digits_only|pct_leading_zero|pct_has_letters|length_range|
++-----------------+--------------------+---------------+----------------+---------------+------------+
+|request id       |NYC unique_key      |100.0          |0.0             |0.0            |8-8         |
+|                 |LA  srnumber        |0.0            |0.0             |0.0            |12-12       |
+|postal code      |NYC incident_zip    |100.0          |0.0             |0.0            |2-5         |
+|                 |LA  zipcode         |100.0          |0.0             |0.0            |1-5         |
+|council district |NYC council_district|100.0          |17.8            |0.0            |2-2         |
+|                 |LA  cd              |100.0          |0.0             |0.0            |1-2         |
+|police precinct  |NYC police_precinct |0.0            |0.0             |100.0          |10-12       |
+|                 |LA  policeprecinct  |0.0            |0.0             |100.0          |6-16        |
+|district         |NYC borough         |0.0            |0.0             |100.0          |5-13        |
+|                 |LA  apc             |0.0            |0.0             |100.0          |10-21       |
+|neighborhood body|NYC community_board |0.0            |64.5            |100.0          |8-25        |
+|                 |LA  ncname          |0.0            |0.0             |100.0          |4-30        |
+|latitude         |NYC latitude        |0.0            |0.0             |0.0            |12-18       |
+|                 |LA  latitude        |0.0            |0.0             |0.0            |8-15        |
++-----------------+--------------------+---------------+----------------+---------------+------------+
+
+  Most common values side by side:
+  council district   NYC council_district: 10, 14, 09, 15, 16, 40
+                     LA  cd: 14, 13, 8, 10, 6, 2
+  police precinct    NYC police_precinct: Precinct 114, Precinct 75, Precinct 46, Precinct 106, Precinct 62, Precinct 44
+                     LA  policeprecinct: NORTHEAST, MISSION, HOLLENBECK, NORTH HOLLYWOOD, 77TH STREET, DEVONSHIRE
+  district           NYC borough: BROOKLYN, QUEENS, MANHATTAN, BRONX, STATEN ISLAND, Unspecified
+                     LA  apc: South Los Angeles APC, South Valley APC, Central APC, North Valley APC, East Los Angeles APC, West Los Angeles APC
+  neighborhood body  NYC community_board: 12 MANHATTAN, 01 BROOKLYN, 01 QUEENS, 12 QUEENS, 05 BROOKLYN, 05 BRONX
+                     LA  ncname: Boyle Heights, Wilshire Center-Koreatown, Downtown Los Angeles, Van Nuys, Empowerment Congress Southeast, Sylmar
+  NYC 311 latitude decimals: 9-15
+  LA MyLA311 latitude decimals: 5-12
+
+================================================================================
+PART 4.4 - CATEGORICAL REPRESENTATIONS
+================================================================================
+
+status: NYC 7 values vs LA 6 values
++-----------+---------+------------+--------+
+|NYC status |nyc_count|LA status   |la_count|
++-----------+---------+------------+--------+
+|Closed     |704789   |Closed      |730126  |
+|In Progress|54731    |Cancelled   |34725   |
+|Open       |36761    |Pending     |17972   |
+|Assigned   |3322     |Open        |16081   |
+|Pending    |330      |Referred Out|932     |
+|Unspecified|53       |Forward     |164     |
+|Started    |14       |            |NULL    |
++-----------+---------+------------+--------+
+
+  values spelled the same in both (ignoring case): ['CLOSED', 'OPEN', 'PENDING']
+
+submission channel: NYC 5 values vs LA 15 values
++--------------------------+---------+-----------------------------+--------+
+|NYC open_data_channel_type|nyc_count|LA requestsource             |la_count|
++--------------------------+---------+-----------------------------+--------+
+|ONLINE                    |419261   |Call                         |314443  |
+|PHONE                     |163519   |Mobile App                   |277390  |
+|MOBILE                    |150744   |Self Service                 |128422  |
+|UNKNOWN                   |65687    |Driver Self Report           |75986   |
+|OTHER                     |789      |Council's Office             |1940    |
+|                          |NULL     |Email                        |1522    |
+|                          |NULL     |Voicemail                    |232     |
+|                          |NULL     |Social                       |51      |
+|                          |NULL     |Fax                          |4       |
+|                          |NULL     |Walk-in                      |4       |
+|                          |NULL     |Web Form                     |2       |
+|                          |NULL     |Queue Initiated Customer Call|1       |
+|                          |NULL     |Letter                       |1       |
+|                          |NULL     |City Attorney                |1       |
+|                          |NULL     |Radio                        |1       |
++--------------------------+---------+-----------------------------+--------+
+
+  values spelled the same in both (ignoring case): none
+
+agency code: NYC 14 distinct, LA 11 distinct, 0 identical (ignoring case): none
+
+request type: NYC 182 distinct, LA 12 distinct, 0 identical (ignoring case): none
+
+Writing style of categorical text (share of values written in ALL CAPS):
++----------+----------------------+------------+
+|dataset   |column                |pct_all_caps|
++----------+----------------------+------------+
+|NYC 311   |status                |0.0         |
+|NYC 311   |open_data_channel_type|100.0       |
+|NYC 311   |agency                |100.0       |
+|NYC 311   |complaint_type        |17.0        |
+|NYC 311   |borough               |99.9        |
+|LA MyLA311|status                |0.0         |
+|LA MyLA311|requestsource         |0.0         |
+|LA MyLA311|owner                 |100.0       |
+|LA MyLA311|requesttype           |0.0         |
+|LA MyLA311|apc                   |0.0         |
++----------+----------------------+------------+
+
+LA-only flag columns and their codes:
+  anonymous: N=695,817, Y=104,183
+  addressverified: Y=799,398, M=476, N=126
+  approximateaddress: N=466,728, None=324,461, Y=8,811

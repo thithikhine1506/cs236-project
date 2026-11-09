@@ -1,0 +1,24 @@
+concept,match,nyc_column,nyc_example,nyc_pct_null,la_column,la_example,la_pct_null,unified_type,note
+request id,renamed,unique_key,70643465,0.0,srnumber,1-4601720641,0.0,string,NYC 8 digits vs LA '1-' + 10 digits
+created timestamp,renamed,created_date,2026-10-05T02:05:08.000,0.0,createddate,2024-01-01T00:00:06.000,0.0,timestamp,"same ISO format, local time"
+closed timestamp,renamed,closed_date,2026-10-05T02:02:34.000,10.5,closeddate,2024-01-03T10:34:37.000,4.5,timestamp,"same ISO format, local time"
+last update timestamp,renamed,resolution_action_updated_date,2026-10-05T02:02:36.000,4.4,updateddate,2024-01-03T10:37:51.000,0.0,timestamp,similar meaning
+due / service date,renamed,due_date,2026-11-03T18:04:31.000,99.6,servicedate,2024-01-03T00:00:00.000,6.6,timestamp,DIFFERENT meaning: NYC target date vs LA service date
+status,same name,status,In Progress,0.0,status,Closed,0.0,string,"same name, different vocabularies"
+submission channel,renamed,open_data_channel_type,ONLINE,0.0,requestsource,Call,0.0,string,different vocabularies
+agency code,renamed,agency,NYPD,0.0,owner,LASAN,0.0,string,"different agencies, no shared codes"
+agency full name,NYC only,agency_name,New York City Police Departm,0.0,-,-,,string,LA has codes only
+request type,renamed,complaint_type,Noise - Residential,0.0,requesttype,Bulky Items,0.0,string,different taxonomies
+request detail,NYC only,descriptor,Banging/Pounding,0.0,-,-,,string,LA has no sub-type
+resolution / action,renamed,resolution_description,The New York City Police Dep,4.7,actiontaken,SR Created,0.0,string,NYC free text vs LA short code
+postal code,renamed,incident_zip,11235,0.9,zipcode,90016,0.1,string,keep as 5-char text (leading zeros)
+full address,renamed,incident_address,3029 BRIGHTON 12 STREET,2.8,address,"3608 S MUIRFIELD ROAD, 90016",0.0,string,"LA address ends with ', <zip>'"
+street name,renamed,street_name,BRIGHTON 12 STREET,2.8,streetname,MUIRFIELD,14.3,string,LA splits direction / name / suffix
+city / locality,NYC only,city,BROOKLYN,6.9,-,-,,string,LA rows are all Los Angeles
+district,renamed,borough,BROOKLYN,0.0,apc,South Los Angeles APC,0.1,string,different units: 5 boroughs vs 7 APCs
+council district,renamed,council_district,48,2.3,cd,10,0.1,integer,NYC zero-padded ('09') vs LA ('9')
+police precinct,renamed,police_precinct,Precinct 60,0.0,policeprecinct,SOUTHWEST,0.1,string,NYC 'Precinct 60' vs LA 'SOUTHWEST'
+neighborhood body,renamed,community_board,13 BROOKLYN,0.0,ncname,West Adams,1.4,string,community board vs neighborhood council
+latitude,same name,latitude,40.579302862451435,1.8,latitude,34.0211832597,0.1,double,same name
+longitude,same name,longitude,-73.95705637804446,1.8,longitude,-118.342143549,0.1,double,same name
+point (WKT),same name,location,POINT (-73.957056378044 40.5,1.8,location,POINT (-118.342143549 34.021,0.1,string,"same name, redundant with lat/lon"

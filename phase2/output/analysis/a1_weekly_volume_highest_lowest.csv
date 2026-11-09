@@ -1,0 +1,5 @@
+source_city,rank,period,requests,pct_of_city,requests_per_day
+NYC,highest,P4: days 22-end,307961,38.5,10619.3
+NYC,lowest,P3: days 15-21,149795,18.72,10699.6
+LA,highest,P4: days 22-end,235779,29.47,3996.3
+LA,lowest,P1: days 1-7,183066,22.88,3736.0

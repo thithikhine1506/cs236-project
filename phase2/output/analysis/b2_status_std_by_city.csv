@@ -1,0 +1,11 @@
+source_city,rank,category,requests,pct_of_city
+NYC,1,Closed,704789,88.1
+NYC,2,In Progress,58067,7.26
+NYC,3,Open,36761,4.6
+NYC,4,Pending,330,0.04
+NYC,5,Unknown,53,0.01
+LA,1,Closed,730126,91.27
+LA,2,Cancelled,34725,4.34
+LA,3,Pending,17972,2.25
+LA,4,Open,16081,2.01
+LA,5,Referred,1096,0.14

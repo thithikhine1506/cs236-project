@@ -1,0 +1,51 @@
+
+================================================================================
+UNIFIED DATASET
+================================================================================
+  /Users/thithikhine/Desktop/Fall 2026/CS236 (DBMS)/Project/processed/unified.parquet
+  rows: 1,600,000  (LA 800,000, NYC 800,000)
+
+================================================================================
+B2 - STANDARDIZED STATUS AND SUBMISSION CHANNEL (bonus)
+================================================================================
+
+status_std per city:
++-----------+-----------+--------+-----------+----+
+|source_city|category   |requests|pct_of_city|rank|
++-----------+-----------+--------+-----------+----+
+|NYC        |Closed     |704789  |88.1       |1   |
+|NYC        |In Progress|58067   |7.26       |2   |
+|NYC        |Open       |36761   |4.6        |3   |
+|NYC        |Pending    |330     |0.04       |4   |
+|NYC        |Unknown    |53      |0.01       |5   |
+|LA         |Closed     |730126  |91.27      |1   |
+|LA         |Cancelled  |34725   |4.34       |2   |
+|LA         |Pending    |17972   |2.25       |3   |
+|LA         |Open       |16081   |2.01       |4   |
+|LA         |Referred   |1096    |0.14       |5   |
++-----------+-----------+--------+-----------+----+
+
+  table saved: phase2/output/analysis/b2_status_std_by_city.csv
+
+channel_std per city:
++-----------+----------+--------+-----------+----+
+|source_city|category  |requests|pct_of_city|rank|
++-----------+----------+--------+-----------+----+
+|NYC        |Online    |419261  |52.41      |1   |
+|NYC        |Phone     |163519  |20.44      |2   |
+|NYC        |Mobile App|150744  |18.84      |3   |
+|NYC        |Unknown   |65687   |8.21       |4   |
+|NYC        |Other     |789     |0.1        |5   |
+|LA         |Phone     |314676  |39.33      |1   |
+|LA         |Mobile App|277390  |34.67      |2   |
+|LA         |Online    |128475  |16.06      |3   |
+|LA         |City Staff|77927   |9.74       |4   |
+|LA         |Email     |1522    |0.19       |5   |
+|LA         |Other     |10      |0.0        |6   |
++-----------+----------+--------+-----------+----+
+
+  table saved: phase2/output/analysis/b2_channel_std_by_city.csv
+Findings:
+  NYC: most common status 'Closed' (88.1%), most common channel 'Online' (52.41%)
+  LA: most common status 'Closed' (91.27%), most common channel 'Phone' (39.33%)
+  plot saved: phase2/output/plots/b2_status_and_channel.png
