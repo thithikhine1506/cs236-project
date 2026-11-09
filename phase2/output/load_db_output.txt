@@ -1,0 +1,71 @@
+:: loading settings :: url = jar:file:/Users/thithikhine/miniforge3/lib/python3.12/site-packages/pyspark/jars/ivy-2.5.1.jar!/org/apache/ivy/core/settings/ivysettings.xml
+
+================================================================================
+STEP 1 - CREATE TABLES (phase2/schema.sql)
+================================================================================
+  database: jdbc:postgresql://localhost:5432/cs236  user: cs236
+  9 SQL statements executed
+  nyc_requests      46 columns, primary key unique_key
+  la_requests       36 columns, primary key srnumber
+  unified_requests  23 columns, primary key request_id
+
+================================================================================
+STEP 2 - PRE-LOAD CHECKS
+================================================================================
+  nyc_requests      columns match; NOT NULL columns without NULLs: 7/7
+  la_requests       columns match; NOT NULL columns without NULLs: 7/7
+  unified_requests  columns match; NOT NULL columns without NULLs: 11/11
+
+================================================================================
+STEP 3 - LOAD WITH SPARK JDBC
+================================================================================
+  loaded processed/nyc_clean.parquet -> nyc_requests
+  loaded processed/la_clean.parquet -> la_requests
+  loaded processed/unified.parquet -> unified_requests
+
+================================================================================
+STEP 4 - VERIFY THE DATABASE AGAINST THE PARQUET FILES
+================================================================================
+
+  --- nyc_requests ---
+  [PASS] row count  database 800,000 / parquet 800,000
+  [PASS] column types match the Spark types  
+         bigint x1, timestamp without time zone x4, text x33, character varying x1, integer x3, double precision x3, boolean x1
+  [PASS] unique_key unique  800,000 distinct
+  [PASS] non-NULL count of every column  
+  [PASS] timestamp min/max unchanged  created_date 2026-07-22 09:27:15 -> 2026-10-05 02:05:08
+  [PASS] resolution_hours / resolution_valid / coordinates totals  valid=704,176, total hours=63,843,293.0
+  [PASS] random sample of 20 rows identical in every column  0 differing rows
+
+  --- la_requests ---
+  [PASS] row count  database 800,000 / parquet 800,000
+  [PASS] column types match the Spark types  
+         character varying x3, timestamp without time zone x4, text x19, boolean x3, double precision x3, integer x4
+  [PASS] srnumber unique  800,000 distinct
+  [PASS] non-NULL count of every column  
+  [PASS] timestamp min/max unchanged  createddate 2024-01-01 00:00:06 -> 2024-07-24 23:14:35
+  [PASS] resolution_hours / resolution_valid / coordinates totals  valid=728,135, total hours=174,929,737.0
+  [PASS] random sample of 20 rows identical in every column  0 differing rows
+
+  --- unified_requests ---
+  [PASS] row count  database 1,600,000 / parquet 1,600,000
+  [PASS] column types match the Spark types  
+         character varying x6, timestamp without time zone x3, text x9, integer x1, double precision x3, boolean x1
+  [PASS] request_id unique  1,600,000 distinct
+  [PASS] non-NULL count of every column  
+  [PASS] timestamp min/max unchanged  created_at 2024-01-01 00:00:06 -> 2026-10-05 02:05:08
+  [PASS] resolution_hours / resolution_valid / coordinates totals  valid=1,432,311, total hours=238,773,029.9
+  [PASS] random sample of 20 rows identical in every column  0 differing rows
+
+  Example rows from unified_requests:
++---------------+-----------+-------------------+----------+-----------+--------------------------+-----------+----------------+----------------+
+|request_id     |source_city|created_at         |status_std|channel_std|request_type              |postal_code|resolution_hours|resolution_valid|
++---------------+-----------+-------------------+----------+-----------+--------------------------+-----------+----------------+----------------+
+|LA-1-4601720641|LA         |2024-01-01 00:00:06|Closed    |Phone      |Bulky Items               |90016      |58.5753         |true            |
+|LA-1-4601721601|LA         |2024-01-01 00:05:06|Open      |Online     |Multiple Streetlight Issue|90710      |NULL            |false           |
+|LA-1-4601721751|LA         |2024-01-01 00:11:45|Closed    |Mobile App |Bulky Items               |91335      |33.7819         |true            |
+|LA-1-4601723091|LA         |2024-01-01 00:06:54|Closed    |Mobile App |Single Streetlight Issue  |90046      |6227.7442       |true            |
++---------------+-----------+-------------------+----------+-----------+--------------------------+-----------+----------------+----------------+
+
+
+  21 of 21 checks passed
