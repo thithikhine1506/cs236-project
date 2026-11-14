@@ -1,26 +1,39 @@
+
+
 -- schema.sql - CS236 Phase 2, section 2.2: PostgreSQL tables for the three processed datasets.
 -- Executed by phase2/load_db.py before loading (tables are recreated on every run).
---
--- Design rules
---   * Column names and order are the same as the Spark (Parquet) datasets.
---   * Types follow the Spark types: string -> TEXT / VARCHAR, timestamp -> TIMESTAMP
---     (local wall-clock time, no time zone), bigint -> BIGINT, int -> INTEGER,
---     double -> DOUBLE PRECISION, boolean -> BOOLEAN.
---   * Codes stay text so leading zeros are kept (ZIP, BBL, house number).
---     VARCHAR(n) is used only where Phase 1 guarantees the format (5-digit ZIP, ids,
---     source_city); everything else is TEXT (same performance in PostgreSQL).
---   * NOT NULL only for attributes every record has (ids, created time, status, type,
---     agency, channel, resolution_valid). All other columns allow NULL = unknown.
---   * CHECK constraints protect the rules Phase 1 enforced (ZIP format, durations >= 0,
---     standardized vocabularies).
+
+-- Thi Thi Khine - tkhine002
+-- Scott Gonzalez Barrios - sgonz266
+
+
+-- Design choices
+-- nyc_requests
+-- Primary key: unique_key (BIGINT).
+-- NOT NULL: created_date, agency, complaint_type, status, open_data_channel_type and resolution_valid
+-- CHECKs: the ZIP is 5 digits, and resolution_hours >= 0
+
+-- la_requests
+-- Primary key: srnumber, a VARCHAR because it contains a hyphen.
+-- NOT NULL: createddate, owner, requesttype, status, requestsource and resolution_valid.
+-- CHECKs: the ZIP is 5 digits, addressverified IN ('Y','N','M'), and resolution_hours >= 0
+-- anonymous and approximateaddress are BOOLEAN; cd, nc, tbmpage and tbmrow are INTEGER.
+
+-- unified_requests
+-- Keys: request_id is the primary key, plus UNIQUE (source_city, source_id), which links each row back to its source table.
+-- CHECKs: source_city IN ('NYC','LA');status_std and channel_std must be one of their 7 standard values; the ZIP is 5 digits;resolution_hours >= 0.
+-- agency_name and request_detail are nullable, because they’re NULL for every LA row.
+
+
+-- Removes old tables, so every run starts clean
 
 DROP TABLE IF EXISTS unified_requests;
 DROP TABLE IF EXISTS nyc_requests;
 DROP TABLE IF EXISTS la_requests;
 
--- -----------------------------------------------------------------------------
--- Cleaned NYC 311 requests: 44 original columns + 2 derived (processed/nyc_clean)
--- -----------------------------------------------------------------------------
+
+-- Cleaned NYC: 46 columns (44 original + 2 derived), primary key unique_key
+
 CREATE TABLE nyc_requests (
     unique_key                     BIGINT           PRIMARY KEY,
     created_date                   TIMESTAMP        NOT NULL,
@@ -70,9 +83,9 @@ CREATE TABLE nyc_requests (
     resolution_valid               BOOLEAN          NOT NULL
 );
 
--- -----------------------------------------------------------------------------
--- Cleaned LA MyLA311 requests: 34 original columns + 2 derived (processed/la_clean)
--- -----------------------------------------------------------------------------
+
+-- Cleaned LA: 36 columns (34 + 2), primary key srnumber
+
 CREATE TABLE la_requests (
     srnumber                  VARCHAR(20)      PRIMARY KEY,
     createddate               TIMESTAMP        NOT NULL,
@@ -112,9 +125,9 @@ CREATE TABLE la_requests (
     resolution_valid          BOOLEAN          NOT NULL
 );
 
--- -----------------------------------------------------------------------------
--- Unified service requests: both cities in the common 23-column schema (processed/unified)
--- -----------------------------------------------------------------------------
+
+-- Unified: 23 columns, primary key request_id + UNIQUE (source_city, source_id)
+
 CREATE TABLE unified_requests (
     request_id       VARCHAR(30)      PRIMARY KEY,                  -- 'NYC-<unique_key>' / 'LA-<srnumber>'
     source_city      VARCHAR(3)       NOT NULL CHECK (source_city IN ('NYC', 'LA')),
@@ -144,7 +157,7 @@ CREATE TABLE unified_requests (
     CONSTRAINT unified_source_unique UNIQUE (source_city, source_id)
 );
 
--- Indexes for the Phase 2 / Phase 3 queries (filter by city, time, postal code, type).
+-- Indexes for the Phase 2 queries (filter by city, time, postal code, type).
 CREATE INDEX unified_city_created_idx ON unified_requests (source_city, created_at);
 CREATE INDEX unified_city_postal_idx  ON unified_requests (source_city, postal_code);
 CREATE INDEX unified_city_type_idx    ON unified_requests (source_city, request_type);

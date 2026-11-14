@@ -1,30 +1,29 @@
 """
+Thi Thi Khine - tkhine002
+Scott Gonzalez Barrios - sgonz266
+
 analysis.py - CS236 Phase 2, section 2.1: Spark analysis of the unified 311 dataset.
-Run from the Project folder:  python -u phase2/analysis.py | tee phase2/output/analysis_output.txt
 One analysis only:            python -u phase2/analysis.py A1      (A1, A2, B1, B2)
 
 Input
-    processed/unified.parquet          (written by phase1/process.py)
+    processed/unified.parquet         
 Outputs
-    phase2/output/analysis/*.csv       one result table per analysis
-    phase2/output/plots/*.png          one figure per analysis
+    phase2/output/analysis/*.csv       
+    phase2/output/plots/*.png          
 
 Analyses
     Weekly request volume          requests per within-month period (days 1-7, 8-14, 15-21, 22-end) per city; highest / lowest period
     Service-request hotspots       top 10 postal codes per city; top 3 request types in each postal code, with counts and % of the postal code's requests.
     Resolution performance         average / median resolution time per city; 5 request types with the longest average resolution time per city
     Status and channels            count and % per standardized status and channel per city; most common status and channel per city
-
-Main PySpark operations: withColumn + when (derived labels), groupBy + agg (counts, avg,
-percentile), Window + row_number (top-N per group, highest / lowest), join (attach totals),
-where / filter (valid rows only).
+       
 """
 import csv
 import os
 import sys
 
 import matplotlib
-matplotlib.use("Agg")                 # save figures to files, never open a window
+matplotlib.use("Agg")                 # save figures to files
 import matplotlib.pyplot as plt
 from pyspark import StorageLevel
 from pyspark.sql import SparkSession
@@ -41,9 +40,9 @@ COLORS = {"NYC": "#2a6fdb", "LA": "#e8833a"}
 TOP_ZIPS = 10                  # postal codes per city
 TOP_TYPES_PER_ZIP = 3          # request types per postal code
 TOP_SLOW_TYPES = 5             # slowest request types per city
+
 # Minimum number of valid resolutions a request type needs to be ranked in B1.
-# 1 = every type is ranked (literal reading of the task). Raise it (e.g. 30) to ignore
-# request types whose average rests on only a handful of requests.
+# 1 = every type is ranked. Raise it (e.g. 30) to ignore request types whose average rests on only a handful of requests.
 MIN_TYPE_REQUESTS = 30
 
 os.environ["PYSPARK_PYTHON"] = sys.executable
@@ -59,9 +58,9 @@ spark = (SparkSession.builder
 spark.sparkContext.setLogLevel("ERROR")
 
 
-# =============================================================================
+
 # HELPERS
-# =============================================================================
+
 def header(title):
     print("\n" + "=" * 80 + f"\n{title}\n" + "=" * 80)
 
@@ -91,21 +90,10 @@ def pct(part, whole):
     return F.round(100.0 * part / whole, 2)
 
 
-# =============================================================================
+
 # WEEKLY REQUEST VOLUME
-# =============================================================================
+
 def weekly_volume(uni):
-    """Operations:
-    1. withColumn + when: label every request with its within-month period from
-       dayofmonth(created_at): P1 days 1-7, P2 8-14, P3 15-21, P4 22-end of month.
-    2. groupBy(source_city, period).agg(count): requests per period per city, summed over
-       all months in the data. countDistinct(date) gives the calendar days covered, so a
-       requests-per-day rate can be shown next to the raw count (P4 has 7-10 days).
-    3. Window partitioned by city + row_number: rank periods by count (descending for the
-       highest, ascending for the lowest).
-    4. A month x period breakdown (groupBy month, period) shows the same counts per month."""
-
-
     # Divide each month into four periods.
     header("WEEKLY REQUEST VOLUME (within-month periods)")
     period = (F.when(F.dayofmonth("created_at") <= 7, "P1: days 1-7")
@@ -148,7 +136,6 @@ def weekly_volume(uni):
     extremes.show(truncate=False)
     ext = save_csv(extremes, "a1_weekly_volume_highest_lowest")
 
-    # Summarize the findings.
     print("Findings:")
     for city in CITIES:
         h = [r for r in ext if r["source_city"] == city and r["rank"] == "highest"][0]
@@ -169,18 +156,9 @@ def weekly_volume(uni):
     save_plot(fig, "a1_weekly_volume.png")
 
 
-# =============================================================================
+
 # SERVICE-REQUEST HOTSPOTS
-# =============================================================================
 def hotspots(uni):
-    """Operations:
-    1. where(postal_code IS NOT NULL): requests without a ZIP cannot belong to a hotspot.
-    2. groupBy(source_city, postal_code).count + Window(city) row_number: the 10 postal
-       codes with the most requests per city (ties: lower postal code first).
-    3. join the top-10 list back to the requests, then groupBy(city, postal_code,
-       request_type).count + Window(city, postal_code) row_number: the 3 most frequent
-       request types within each hotspot.
-    4. pct_of_zip = type count / all requests in that postal code x 100."""
     header("SERVICE-REQUEST HOTSPOTS (top postal codes and their top request types)")
     # Keep only requests that have a ZIP code.
     with_zip = uni.where(F.col("postal_code").isNotNull())
@@ -243,18 +221,11 @@ def hotspots(uni):
     save_plot(fig, "a2_hotspots.png")
 
 
-# =============================================================================
+
 # RESOLUTION PERFORMANCE
-# =============================================================================
+
 def resolution_performance(uni):
-    """Operations:
-    1. where(resolution_valid): only valid completed requests (status Closed, closed date
-       present, closed >= created; flag created in Phase 1).
-    2. groupBy(source_city).agg(avg, percentile 0.5, count): average and exact median
-       resolution time per city, in hours and days.
-    3. groupBy(source_city, request_type).agg(...) + Window(city) row_number ordered by
-       average descending: the 5 request types with the longest average resolution time."""
-    header("B1 - RESOLUTION PERFORMANCE (bonus, valid completed requests only)")
+    
     # Use only valid completed requests.
     valid = uni.where(F.col("resolution_valid"))
 
@@ -310,14 +281,11 @@ def resolution_performance(uni):
     save_plot(fig, "b1_slowest_request_types.png")
 
 
-# =============================================================================
 # STATUS AND SUBMISSION CHANNELS
-# =============================================================================
+# Count and % per status_std / channel_std
+
 def status_and_channels(uni):
-    """Operations:
-    1. groupBy(source_city, status_std).count and groupBy(source_city, channel_std).count.
-    2. Window(city) sum: % of the city's requests in each category.
-    3. Window(city) row_number ordered by count: the most common category per city."""
+
     header("B2 - STANDARDIZED STATUS AND SUBMISSION CHANNEL (bonus)")
 
     # Windows for city totals and ranking.
@@ -361,9 +329,9 @@ def status_and_channels(uni):
     save_plot(fig, "b2_status_and_channel.png")
 
 
-# =============================================================================
+
 # MAIN
-# =============================================================================
+
 # Load the unified dataset.
 uni = spark.read.parquet(UNIFIED_PATH).persist(StorageLevel.MEMORY_AND_DISK)
 

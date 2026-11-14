@@ -1,21 +1,12 @@
 """
+Thi Thi Khine - tkhine002
+Scott Gonzalez Barrios - sgonz266
+
 load_db.py - CS236 Phase 2, section 2.2: load the three processed datasets into PostgreSQL
 with PySpark (JDBC) and verify the result.
 
-Run from the Project folder, with the PostgreSQL container running:
-    python -u phase2/load_db.py | tee phase2/output/load_db_output.txt
-or, as in the project instructions:
-    spark-submit --packages org.postgresql:postgresql:42.7.3 phase2/load_db.py
-
 Inputs   processed/nyc_clean.parquet, processed/la_clean.parquet, processed/unified.parquet
-Tables   nyc_requests, la_requests, unified_requests   (design: phase2/schema.sql)
-
-Steps
-    1. create   run phase2/schema.sql (drop + create tables, keys, constraints, indexes)
-    2. precheck every Parquet column exists in its table, and NOT NULL columns have no NULLs
-    3. load     DataFrame.write.jdbc(mode="append") into the empty tables
-    4. verify   row counts, column types, non-NULL counts per column, timestamp ranges,
-                numeric totals and a row-by-row comparison of a random sample
+Tables   nyc_requests, la_requests, unified_requests
 
 Connection settings come from environment variables (defaults match the docker command
 in phase2/README.md): PG_HOST, PG_PORT, PG_DB, PG_USER, PG_PASSWORD.
@@ -70,9 +61,7 @@ spark = (SparkSession.builder
          .getOrCreate())
 spark.sparkContext.setLogLevel("ERROR")
 
-# The JDBC driver turns timestamps into text using the JVM's default time zone. Setting it to
-# UTC (the Spark session time zone) stores exactly the wall-clock times of the Parquet files,
-# e.g. 2024-01-01 00:00:06 stays 2024-01-01 00:00:06 in PostgreSQL.
+# The JDBC driver turns timestamps into text, setting it to UTC stores exactly the wall-clock times of the Parquet files.
 _jvm = spark.sparkContext._jvm
 _jvm.java.util.TimeZone.setDefault(_jvm.java.util.TimeZone.getTimeZone("UTC"))
 
@@ -127,9 +116,9 @@ def table_columns(table):
     return {r["column_name"]: (r["data_type"], r["is_nullable"]) for r in rows}
 
 
-# =============================================================================
-# STEP 1 - CREATE TABLES
-# =============================================================================
+
+# STEP 1 - Create Tables : Runs schema.sql, reads the Parquet files and the table definitions
+
 header("STEP 1 - CREATE TABLES (phase2/schema.sql)")
 print(f"  database: {JDBC_URL.split('?')[0]}  user: {PG_USER}")
 try:
@@ -147,9 +136,9 @@ for name, (table, pk) in DATASETS.items():
     print(f"  {table:<17} {len(schemas[name])} columns, primary key {pk}")
 
 
-# =============================================================================
-# STEP 2 - PRE-LOAD CHECKS (stop before writing anything if the data does not fit)
-# =============================================================================
+
+# STEP 2 - Preload checks. (Columns match? No NULLs in NOT NULL columns? Stops if not)
+
 header("STEP 2 - PRE-LOAD CHECKS")
 problems = []
 for name, (table, _) in DATASETS.items():
@@ -174,9 +163,9 @@ if problems:
     sys.exit(1)
 
 
-# =============================================================================
-# STEP 3 - LOAD
-# =============================================================================
+
+# STEP 3 - Load
+
 header("STEP 3 - LOAD WITH SPARK JDBC")
 for name, (table, _) in DATASETS.items():
     # Select the columns in table order; 4 partitions = 4 parallel JDBC connections.
@@ -185,16 +174,16 @@ for name, (table, _) in DATASETS.items():
     print(f"  loaded processed/{name}.parquet -> {table}")
 
 
-# =============================================================================
-# STEP 4 - VERIFY
-# =============================================================================
+
+# STEP 4 - Verify
+
 header("STEP 4 - VERIFY THE DATABASE AGAINST THE PARQUET FILES")
 for name, (table, pk) in DATASETS.items():
     df, cols = data[name], schemas[name]
     spark_types = {f.name: f.dataType.simpleString() for f in df.schema.fields}
     print(f"\n  --- {table} ---")
 
-    # 1. record count
+    # 1. row count
     n_parquet = df.count()
     n_db = query(f"SELECT COUNT(*) AS n FROM {table}").collect()[0]["n"]
     check("row count", n_db == n_parquet, f"database {n_db:,} / parquet {n_parquet:,}")
@@ -212,14 +201,14 @@ for name, (table, pk) in DATASETS.items():
     n_pk = query(f"SELECT COUNT(DISTINCT {pk}) AS n FROM {table}").collect()[0]["n"]
     check(f"{pk} unique", n_pk == n_parquet, f"{n_pk:,} distinct")
 
-    # 4. non-NULL count of every column (no value lost or turned into NULL)
+    # 4. non-NULL count of every column 
     db_nn = query("SELECT " + ", ".join(f'COUNT("{c}") AS "{c}"' for c in cols)
                   + f" FROM {table}").collect()[0]
     pq_nn = df.agg(*[F.count(c).alias(c) for c in cols]).collect()[0]
     diff = [f"{c} {db_nn[c]:,}/{pq_nn[c]:,}" for c in cols if db_nn[c] != pq_nn[c]]
     check("non-NULL count of every column", not diff, "; ".join(diff))
 
-    # 5. timestamp ranges, compared as text (catches any time-zone shift)
+    # 5. Timestamp min/max unchanged, data and time exactly the same. 
     ts_cols = [c for c in cols if spark_types[c] == "timestamp"]
     db_ts = query("SELECT " + ", ".join(
         f"TO_CHAR(MIN({c}), 'YYYY-MM-DD HH24:MI:SS') AS min_{c}, "
@@ -233,7 +222,7 @@ for name, (table, pk) in DATASETS.items():
     check("timestamp min/max unchanged", not diff,
           "; ".join(diff) or f"{created} {db_ts['min_' + created]} -> {db_ts['max_' + created]}")
 
-    # 6. numeric and boolean totals of the derived attributes and coordinates
+    # 6. numeric and boolean totals of the derived attributes and coordinates.
     db_num = query(f"SELECT SUM(resolution_hours) AS hours, "
                    f"SUM(CASE WHEN resolution_valid THEN 1 ELSE 0 END) AS valid, "
                    f"SUM(latitude) AS lat, SUM(longitude) AS lon FROM {table}").collect()[0]
